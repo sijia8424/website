@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>秒寻SecFind-工业元器件智能选型助手 - 用户旅程</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --secondary: #0f172a;
+            --accent: #f59e0b;
+            --light: #f8fafc;
+            --dark: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 1rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            color: var(--secondary);
+            font-size: 1.75rem;
+            margin: 1.5rem 0;
+        }
+
+        h3 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .subtitle {
+            color: var(--dark);
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 角色导航 */
+        .role-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .role-tab {
+            padding: 1rem 2rem;
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .role-tab.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .role-tab:hover:not(.active) {
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* 角色内容 */
+        .role-content {
+            display: none;
+        }
+
+        .role-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* 旅程阶段 */
+        .journey-map {
+            display: flex;
+            justify-content: space-between;
+            margin: 2rem 0;
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .journey-map::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e2e8f0;
+            z-index: 1;
+        }
+
+        .stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100px;
+        }
+
+        .stage-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+
+        .stage-name {
+            font-weight: 600;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .stage.active .stage-icon {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .stage:hover .stage-icon {
+            border-color: var(--primary-light);
+            transform: scale(1.05);
+        }
+
+        /* 阶段详情 */
+        .stage-details {
+            display: none;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .stage-details.active {
+            display: block;
+        }
+
+        /* 详情内容样式 */
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-title::before {
+            content: "•";
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .detail-content {
+            padding-left: 1.5rem;
+        }
+
+        .detail-item {
+            margin-bottom: 0.5rem;
+        }
+
+        /* 功能高亮 */
+        .feature-highlight {
+            background-color: #eef2ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+
+        .feature-name {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* 交互分析 */
+        .interaction-analysis {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin: 3rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .interaction-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .interaction-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .interaction-icon {
+            background-color: #eef2ff;
+            color: var(--primary);
+            padding: 0.75rem;
+            border-radius: 50%;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 按钮 */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* 标签 */
+        .tag {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .tag-feature {
+            background-color: #eef2ff;
+            color: var(--primary);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .role-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .journey-map {
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding-bottom: 1rem;
+            }
+
+            .stage {
+                min-width: 100px;
+                margin-right: 1rem;
+            }
+
+            .interaction-item {
+                flex-direction: column;
+            }
+
+            .interaction-icon {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>秒寻SecFind-工业元器件智能选型助手</h1>
+            <p class="subtitle">智能化解决工业元器件选型、采购与销售全流程痛点</p>
+        </header>
+
+        <div class="role-tabs">
+            <div class="role-tab active" data-role="engineer">设计工程师</div>
+            <div class="role-tab" data-role="procurement">采购人员</div>
+            <div class="role-tab" data-role="sales">销售人员</div>
+        </div>
+
+        <!-- 设计工程师用户旅程 -->
+        <div class="role-content active" id="engineer">
+            <h2>设计工程师用户旅程</h2>
+            <p>我们的智能助手如何帮助工程师快速高效地选择合适的元器件</p>
+
+            <div class="journey-map">
+                <div class="stage active" data-stage="need">
+                    <div class="stage-icon">需</div>
+                    <div class="stage-name">需求阶段</div>
+                </div>
+                <div class="stage" data-stage="search">
+                    <div class="stage-icon">搜</div>
+                    <div class="stage-name">搜索阶段</div>
+                </div>
+                <div class="stage" data-stage="filter">
+                    <div class="stage-icon">筛</div>
+                    <div class="stage-name">筛选阶段</div>
+                </div>
+                <div class="stage" data-stage="compare">
+                    <div class="stage-icon">比</div>
+                    <div class="stage-name">比较阶段</div>
+                </div>
+                <div class="stage" data-stage="inquire">
+                    <div class="stage-icon">询</div>
+                    <div class="stage-name">咨询阶段</div>
+                </div>
+                <div class="stage" data-stage="decide">
+                    <div class="stage-icon">定</div>
+                    <div class="stage-name">决策阶段</div>
+                </div>
+            </div>
+
+            <!-- 需求阶段详情 -->
+            <div class="stage-details active" id="need-details">
+                <h3>需求阶段</h3>
+                
+                <div class="detail-section">
+                    <div class="detail-title">需求触发点</div>
+                    <div class="detail-content">
+                        <div class="detail-item">
+                            <strong>新产品开发：</strong>工程师需要为新设计选择合适元器件
+                        </div>
+                        <div class="detail-item">
+                            <strong>质量问题解决：</strong>解决现有元器件可靠性或兼容性问题
+                        </div>
+                        <div class="detail-item">
+                            <strong>产品改进：</strong>寻找性能更优或成本更低的替代元器件
+                        </div>
+                        <div class="detail-item">
+                            <strong>停产应对：</strong>原有元器件停产，需寻找替代品
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">信息收集行为</div>
+                    <div class="detail-content">
+                        <div class="detail-item">与客户讨论技术要求和约束条件</div>
+                        <div class="detail-item">查阅历史设计方案和经验</div>
+                        <div class="detail-item">整理关键参数和性能指标清单</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 搜索阶段详情 -->
+            <div class="stage-details" id="search-details">
+                <h3>搜索阶段</h3>
+                
+                <div class="feature-highlight">
+                    <div class="feature-name">功能A： 精确型号查询</div>
+                    <div class="detail-item">
+                        <strong>用户行为：</strong>直接在搜索框输入完整型号
+                    </div>
+                    <div class="detail-item">
+                        <strong>系统响应：</strong>展示详细参数页，包含技术规格、应用场景、替代型号推荐
+                    </div>
+                    <div class="detail-item">
+                        <strong>附加功能：</strong>提供数据手册下载、3D模型获取、应用案例展示
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">约束条件查询场景</div>
+                    <div class="detail-content">
+                        <div class="detail-item">
+                            <strong>用户行为：</strong>通过多维度筛选和自然语言描述需求
+                            <div style="margin-left: 1rem; font-style: italic; color: #64748b;">
+                                例："需要一个24V供电、4-20mA输出的温度传感器，测量范围0-150℃，防护等级IP67"
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <strong>系统响应：</strong>约束条件越多，推荐越准确
+                            <ul style="margin-left: 1rem;">
+                                <li>引导式问答，逐步细化需求（"是否需要本安型？""安装方式是螺纹还是法兰？"）</li>
+                                <li>约束条件收集完毕后，提供符合条件的元器件列表</li>
+                            </ul>
+                        </div>
+                        <div class="detail-item">
+                            <strong>决策支持：</strong>关键参数突出显示，帮助快速识别最符合需求的选项
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 筛选阶段详情 -->
+            <div class="stage-details" id="filter-details">
+                <h3>筛选阶段</h3>
+                
+                <div class="feature-highlight">
+                    <div class="feature-name">功能B：参数对比行为</div>
+                    <div class="detail-item">
+                        <strong>两个已知型号对比：</strong>
+                        <ul style="margin-left: 1rem;">
+                            <li>用户选择两个具体型号进行直观参数对比</li>
+                            <li>系统生成对比表，突出显示差异点和各自优势</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">平替品推荐行为</div>
+                    <div class="detail-content">
+                        <div class="detail-item">用户提供一个参考型号，寻找替代品</div>
+                        <div class="detail-item">系统按兼容性、性能相似度排序推荐替代产品</div>
+                        <div class="detail-item">提供"更高性能"、"更低成本"、"交期更短"等筛选角度</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 比较阶段详情 -->
+            <div class="stage-details" id="compare-details">
+                <h3>比较阶段</h3>
+                
+                <div class="detail-section">
+                    <div class="detail-title">多产品综合比较行为</div>
+                    <div class="detail-content">
+                        <div class="detail-item">
+                            <strong>多维度参数矩阵对比：</strong>
+                            <ul style="margin-left: 1rem;">
+                                <li><strong>用户行为：</strong>同时选择3-5个候选元器件进行全面技术参数对比</li>
+                                <li><strong>系统响应：</strong>
+                                    <ul>
+                                        <li>生成可视化参数对比矩阵，突出关键差异点</li>
+                                        <li>提供颜色编码（绿色优、黄色中、红色差）直观表达参数优劣</li>
+                                        <li>支持自定义关键参数排序，突出用户最关注的指标</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 咨询阶段详情 -->
+            <div class="stage-details" id="inquire-details">
+                <h3>咨询阶段</h3>
+                
+                <div class="detail-section">
+                    <div class="detail-title">触发条件</div>
+                    <div class="detail-content">
+                        <div class="detail-item">产品数据不足或存疑：平台信息不完整或最新规格尚未更新</div>
+                        <div class="detail-item">特殊应用需求：需要超出标准参数表的专业应用建议</div>
+                        <div class="detail-item">定制需求：需要非标准规格或定制化的元器件方案</div>
+                        <div class="detail-item">复杂技术问题：需要厂商提供设计建议或技术支持</div>
+                        <div class="detail-item">样品申请：需要获取实物样品进行测试验证</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">交互行为</div>
+                    <div class="detail-content">
+                        <div class="detail-item">
+                            <strong>技术咨询互动：</strong>
+                            <ul style="margin-left: 1rem;">
+                                <li>用户行为：一键发起技术咨询请求，附带已筛选元器件信息和具体问题</li>
+                                <li>智能推荐可能合适的销售专家（基于产品类别和专业领域）</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">系统智能支持</div>
+                    <div class="detail-content">
+                        <div class="detail-item">自动提取用户浏览历史和比较数据，提供给销售人员背景信息</div>
+                        <div class="detail-item">记录咨询历史，用于未来类似问题的快速解决</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 决策阶段详情 -->
+                  <div class="stage-details" id="decide-details">
+            <h3>决策阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">保存与整理行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">用户将选定元器件加入项目BOM清单</div>
+                    <div class="detail-item">BOM定稿下发采购</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 采购人员用户旅程 -->
+    <div class="role-content" id="procurement">
+        <h2>采购人员用户旅程</h2>
+        <p>我们的智能助手如何帮助采购人员更高效地询比价以及管理订单</p>
+
+        <div class="journey-map">
+            <div class="stage active" data-stage="proc-need">
+                <div class="stage-icon">需</div>
+                <div class="stage-name">需求阶段</div>
+            </div>
+            <div class="stage" data-stage="proc-filter">
+                <div class="stage-icon">筛</div>
+                <div class="stage-name">筛选阶段</div>
+            </div>
+            <div class="stage" data-stage="proc-inquire">
+                <div class="stage-icon">询</div>
+                <div class="stage-name">询价阶段</div>
+            </div>
+            <div class="stage" data-stage="proc-compare">
+                <div class="stage-icon">比</div>
+                <div class="stage-name">比价阶段</div>
+            </div>
+            <div class="stage" data-stage="proc-order">
+                <div class="stage-icon">订</div>
+                <div class="stage-name">订单阶段</div>
+            </div>
+        </div>
+
+        <!-- 采购需求阶段详情 -->
+        <div class="stage-details active" id="proc-need-details">
+            <h3>需求阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">需求确认行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">与设计工程师就技术规格进行沟通确认</div>
+                    <div class="detail-item">标记可替代型号的灵活度范围</div>
+                    <div class="detail-item">确定采购优先级（交期/成本/品质）</div>
+                    <div class="detail-item">采购无专业知识只能比价格</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 采购筛选阶段详情 -->
+        <div class="stage-details" id="proc-filter-details">
+            <h3>筛选阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">供应商筛选行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">按地区、认证资质、历史合作记录筛选供应商</div>
+                    <div class="detail-item">查看供应商评分和交付能力数据</div>
+                    <div class="detail-item">筛选授权代理商或原厂直供渠道</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 采购询价阶段详情 -->
+        <div class="stage-details" id="proc-inquire-details">
+            <h3>询价阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">询价行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">多渠道供应商推荐，支持一键询价</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 采购比价阶段详情 -->
+        <div class="stage-details" id="proc-compare-details">
+            <h3>比价阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">比价行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">接收报价、交期、最小订购量等信息</div>
+                    <div class="detail-item">智能分析总结：综合对比供应商报价、交期和服务条款</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 采购订单阶段详情 -->
+        <div class="stage-details" id="proc-order-details">
+            <h3>订单阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">订单执行行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">系统生成标准采购订单</div>
+                    <div class="detail-item">集成式下单流程，一键发送给供应商</div>
+                    <div class="detail-item">订单跟踪与状态更新</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 销售人员用户旅程 -->
+    <div class="role-content" id="sales">
+        <h2>销售人员用户旅程</h2>
+        <p>我们的智能助手如何帮助销售人员提升技术咨询及询盘的质量和效率</p>
+
+        <div class="journey-map">
+            <div class="stage active" data-stage="sales-marketing">
+                <div class="stage-icon">营</div>
+                <div class="stage-name">营销阶段</div>
+            </div>
+            <div class="stage" data-stage="sales-consult">
+                <div class="stage-icon">销</div>
+                <div class="stage-name">销售咨询</div>
+            </div>
+            <div class="stage" data-stage="sales-deal">
+                <div class="stage-icon">售</div>
+                <div class="stage-name">售卖阶段</div>
+            </div>
+            <div class="stage" data-stage="sales-service">
+                <div class="stage-icon">服</div>
+                <div class="stage-name">服务阶段</div>
+            </div>
+        </div>
+
+        <!-- 销售营销阶段详情 -->
+        <div class="stage-details active" id="sales-marketing-details">
+            <h3>营销阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">产品数据上传行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">批量上传产品技术参数、规格说明</div>
+                    <div class="detail-item">更新产品生命周期、停产计划等重要信息</div>
+                    <div class="detail-item">添加产品应用案例和技术资料</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-title">数据质量管理行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">响应系统提示完善不完整数据</div>
+                    <div class="detail-item">定期更新变动的产品信息</div>
+                    <div class="detail-item">参与数据审核和校验流程</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 销售咨询阶段详情 -->
+        <div class="stage-details" id="sales-consult-details">
+            <h3>销售咨询阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">技术咨询响应流程</div>
+                <div class="detail-content">
+                    <div class="detail-item">
+                        <strong>客户咨询处理行为：</strong>
+                        <ul style="margin-left: 1rem;">
+                            <li>系统自动分类工程师用户的咨询请求（产品规格、应用建议、定制需求等）</li>
+                            <li>通过平台记录客户沟通历史和需求偏好</li>
+                            <li>使用系统辅助回答技术问题</li>
+                            <li>设置优先级机制，确保关键客户和紧急需求得到及时响应</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 销售售卖阶段详情 -->
+        <div class="stage-details" id="sales-deal-details">
+            <h3>售卖阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">询价响应行为</div>
+                <div class="detail-content">
+                    <div class="detail-item">接收系统自动分配的客户询价需求</div>
+                    <div class="detail-item">快速生成报价，包含价格、交期和最小订购量信息</div>
+                    <div class="detail-item">使用系统辅助回答商务问题</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-title">商务谈判管理</div>
+                <div class="detail-content">
+                    <div class="detail-item">记录客户特殊价格和交付要求</div>
+                    <div class="detail-item">系统辅助计算不同订单量的阶梯价格</div>
+                    <div class="detail-item">提供报价调整建议</div>
+                    <div class="detail-item">自动处理标准折扣审批流程</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-title">订单转化跟踪</div>
+                <div class="detail-content">
+                    <div class="detail-item">监控询价到订单的转化率</div>
+                    <div class="detail-item">系统提醒跟进长期未转化的询价</div>
+                    <div class="detail-item">生成销售漏斗报告和预测</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 销售服务阶段详情 -->
+        <div class="stage-details" id="sales-service-details">
+            <h3>服务阶段</h3>
+            
+            <div class="detail-section">
+                <div class="detail-title">订单执行监控</div>
+                <div class="detail-content">
+                    <div class="detail-item">追踪客户订单从下单到交付的全流程状态</div>
+                    <div class="detail-item">系统自动提醒交期风险和异常情况</div>
+                    <div class="detail-item">主动向客户推送订单状态更新</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-title">客户关系维护</div>
+                <div class="detail-content">
+                    <div class="detail-item">管理客户联系人网络和关键决策者信息</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-title">问题处理闭环</div>
+                <div class="detail-content">
+                    <div class="detail-item">使用系统辅助排查故障</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 跨角色交互分析 -->
+    <div class="interaction-analysis">
+        <h2>跨角色交互分析</h2>
+        <p>我们的智能助手如何打通不同角色之间的协作壁垒</p>
+
+        <div class="interaction-item">
+            <div class="interaction-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <div>
+                <h3>工程师-采购协作模式</h3>
+                <div class="detail-item">工程师通过系统直接传递技术要求给采购</div>
+                <div class="detail-item">采购反馈供应情况，工程师根据反馈调整设计</div>
+                <div class="detail-item">双方通过平台进行技术参数与成本平衡的讨论</div>
+            </div>
+        </div>
+
+        <div class="interaction-item">
+            <div class="interaction-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <div>
+                <h3>销售-客户互动模式</h3>
+                <div class="detail-item">销售利用系统提供更专业、更快速的技术响应</div>
+                <div class="detail-item">客户获得更精准的产品推荐和技术支持</div>
+                <div class="detail-item">通过平台记录互动历史，建立长期服务关系</div>
+            </div>
+        </div>
+
+        <div class="interaction-item">
+            <div class="interaction-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3>数据价值循环模式</h3>
+                <div class="detail-item">销售提供产品数据 → 工程师使用并提供反馈 → 销售优化产品和服务 → 形成良性循环</div>
+                <div class="detail-item">用户搜索和比较行为数据驱动平台推荐算法优化</div>
+                <div class="detail-item">供需双方在平台上形成信息闭环和价值共创</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 演示交互区域 -->
+<div style="background-color: white; border-radius: var(--border-radius); padding: 2rem; margin: 3rem 0; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+    <h2>核心功能演示</h2>
+    <p style="margin-bottom: 2rem;">体验我们智能助手的主要功能</p>
+    
+    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
+        <a href="#" class="btn" onclick="showDemo('search'); return false;">
+            <span class="tag tag-feature">功能A</span> 精确型号查询
+        </a>
+        <a href="#" class="btn" onclick="showDemo('compare'); return false;">
+            <span class="tag tag-feature">功能B</span> 参数对比功能
+        </a>
+        <a href="#" class="btn btn-outline" onclick="showDemo('inquiry'); return false;">
+            技术咨询功能
+        </a>
+    </div>
+    
+    <div id="demo-container" style="border: 1px solid #e2e8f0; border-radius: var(--border-radius); padding: 1rem; min-height: 300px; background-color: #f8fafc; text-align: left; display: none;">
+        <!-- 精确型号查询演示 -->
+        <div id="demo-search" style="display: none;">
+            <h3 style="margin-bottom: 1rem;">精确型号查询演示</h3>
+            <div style="display: flex; margin-bottom: 1rem;">
+                <input type="text" placeholder="输入元器件型号，如 LM317" style="flex: 1; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius) 0 0 var(--border-radius); outline: none;" value="LM317">
+                <button class="btn" style="border-radius: 0 var(--border-radius) var(--border-radius) 0;">搜索</button>
+            </div>
+            <div style="background-color: white; padding: 1rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0;">
+                <h4>LM317 - 可调节线性稳压器</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">基本参数</div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>输入电压范围:</span>
+                            <span>3.7V ~ 40V</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>输出电压范围:</span>
+                            <span>1.2V ~ 37V</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>最大输出电流:</span>
+                            <span>1.5A</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span>工作温度:</span>
+                            <span>-55°C ~ 150°C</span>
+                        </div>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">可用资源</div>
+                        <div style="margin-bottom: 0.25rem;">
+                            <a href="#" style="color: var(--primary);">下载数据手册</a>
+                        </div>
+                        <div style="margin-bottom: 0.25rem;">
+                            <a href="#" style="color: var(--primary);">获取3D模型</a>
+                        </div>
+                        <div style="margin-bottom: 0.25rem;">
+                            <a href="#" style="color: var(--primary);">查看应用案例 (24)</a>
+                        </div>
+                    </div>
+                </div>
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 1rem; margin-top: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">替代型号推荐</div>
+                    <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                        <div style="min-width: 150px; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius); background-color: #f8fafc;">
+                            <div style="font-weight: 600;">LM350</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">更高输出电流: 3A</div>
+                        </div>
+                        <div style="min-width: 150px; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius); background-color: #f8fafc;">
+                            <div style="font-weight: 600;">LM317HV</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">更宽输入电压: 最高60V</div>
+                        </div>
+                        <div style="min-width: 150px; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius); background-color: #f8fafc;">
+                            <div style="font-weight: 600;">LM1117</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">低压差版本</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参数对比功能演示 -->
+        <div id="demo-compare" style="display: none;">
+            <h3 style="margin-bottom: 1rem;">参数对比功能演示</h3>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <div style="flex: 1;">
+                    <input type="text" placeholder="输入第一个型号" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius); outline: none;" value="LM317">
+                </div>
+                <div style="flex: 1;">
+                    <input type="text" placeholder="输入第二个型号" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius); outline: none;" value="LM7805">
+                </div>
+                <button class="btn" style="flex-shrink: 0;">对比</button>
+            </div>
+            <div style="background-color: white; padding: 1rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0;">
+                <h4 style="margin-bottom: 1rem;">LM317 vs LM7805 对比结果</h4>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #f1f5f9; text-align: left;">
+                            <th style="padding: 0.75rem; border: 1px solid #e2e8f0;">参数</th>
+                            <th style="padding: 0.75rem; border: 1px solid #e2e8f0;">LM317</th>
+                            <th style="padding: 0.75rem; border: 1px solid #e2e8f0;">LM7805</th>
+                            <th style="padding: 0.75rem; border: 1px solid #e2e8f0;">差异分析</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">类型</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">可调稳压器</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">固定输出稳压器</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0; color: var(--primary);">LM317更灵活，支持调节输出电压</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">输入电压范围</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">3.7V ~ 40V</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">7V ~ 35V</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0; color: var(--success);">LM317有更宽的输入范围</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">输出电压</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">1.2V ~ 37V (可调)</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">5V (固定)</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0; color: var(--primary);">LM317适合需要非标准电压的应用</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">最大输出电流</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">1.5A</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">1.0A</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0; color: var(--success);">LM317提供更高电流输出</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">电路复杂度</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">需要外部电阻设置电压</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0;">简单，仅需旁路电容</td>
+                            <td style="padding: 0.75rem; border: 1px solid #e2e8f0; color: var(--warning);">LM7805使用更简单</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-top: 1rem; padding: 0.75rem; background-color: #eef2ff; border-radius: var(--border-radius);">
+                    <strong>总结建议：</strong> 如果应用需要固定5V输出且电路简单为首要考虑，选择LM7805；如果需要可调电压或更高电流输出，选择LM317。
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术咨询功能演示 -->
+        <div id="demo-inquiry" style="display: none;">
+            <h3 style="margin-bottom: 1rem;">技术咨询功能演示</h3>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <div style="flex: 3;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">咨询问题</div>
+                    <textarea style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius); outline: none; min-height: 100px;">我需要一个能在潮湿环境中工作的传感器，测量0-100°C温度范围，精度要求±0.5°C，有没有推荐？</textarea>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">已选元器件</div>
+                    <div style="padding: 0.75rem; background-color: white; border: 1px solid #e2e8f0; border-radius: var(--border-radius); min-height: 100px;">
+                        <div style="padding: 0.5rem; background-color: #eef2ff; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
+                            PT100 温度传感器
+                        </div>
+                        <div style="padding: 0.5rem; background-color: #eef2ff; border-radius: var(--border-radius);">
+                            DHT22 湿度传感器
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <div>
+                    <label style="margin-right: 0.5rem;">
+                        <input type="checkbox" checked> 附加产品数据表
+                    </label>
+                    <label>
+                        <input type="checkbox"> 附加应用场景描述
+                    </label>
+                </div>
+                <button class="btn">提交咨询</button>
+            </div>
+            <div style="background-color: white; padding: 1rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <h4>技术咨询响应</h4>
+                    <div style="color: var(--success);">估计响应时间: 15分钟</div>
+                </div>
+                <div style="padding: 1rem; background-color: #f8fafc; border-radius: var(--border-radius); margin-bottom: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">系统智能推荐</div>
+                    <div style="margin-bottom: 0.5rem;">对于潮湿环境中的高精度温度测量，我推荐以下几个方案：</div>
+                    <ol style="margin-left: 1.5rem;">
+                        <li style="margin-bottom: 0.25rem;"><strong>PT1000</strong> - 工业级铂电阻，IP67防护，精度±0.3°C，适合潮湿环境</li>
+                        <li style="margin-bottom: 0.25rem;"><strong>DS18B20</strong> - 数字温度传感器，可获取防水套管版本，精度±0.5°C</li>
+                        <li style="margin-bottom: 0.25rem;"><strong>SHT85</strong> - 集成温湿度传感器，防护等级IP67，温度精度±0.1°C，湿度精度±1.5%RH</li>
+                    </ol>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="flex: 1; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius);">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">技术专家</div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <div style="width: 50px; height: 50px; background-color: #e2e8f0; border-radius: 50%;"></div>
+                            <div>
+                                <div style="font-weight: 600;">王工</div>
+                                <div style="font-size: 0.8rem; color: #64748b;">传感器技术专家</div>
+                                <div style="font-size: 0.8rem;">响应率: 95%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--border-radius);">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">销售顾问</div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <div style="width: 50px; height: 50px; background-color: #e2e8f0; border-radius: 50%;"></div>
+                            <div>
+                                <div style="font-weight: 600;">李经理</div>
+                                <div style="font-size: 0.8rem; color: #64748b;">工业传感器销售</div>
+                                <div style="font-size: 0.8rem;">平均回复时间: 30分钟</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-outline" style="flex: 1;">预约视频咨询</button>
+                    <button class="btn" style="flex: 1;">即时在线沟通</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 演示切换按钮 -->
+        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;">
+            <button class="btn" onclick="resetDemo()">重置演示</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 角色切换
+    document.querySelectorAll('.role-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            // 移除所有活动状态
+            document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.role-content').forEach(c => c.classList.remove('active'));
+            
+            // 设置当前活动状态
+            tab.classList.add('active');
+            const role = tab.getAttribute('data-role');
+            document.getElementById(role).classList.add('active');
+        });
+    });
+
+    // 旅程阶段切换
+    document.querySelectorAll('.stage').forEach(stage => {
+        stage.addEventListener('click', () => {
+            const parent = stage.closest('.journey-map');
+            const parentContent = parent.closest('.role-content');
+            
+            // 移除父容器内的所有活动状态
+            parent.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+            parentContent.querySelectorAll('.stage-details').forEach(d => d.classList.remove('active'));
+            
+            // 设置当前活动状态
+            stage.classList.add('active');
+            const stageId = stage.getAttribute('data-stage');
+            const detailsElement = parentContent.querySelector(`#${stageId}-details`);
+            if (detailsElement) {
+                detailsElement.classList.add('active');
+            }
+        });
+    });
+
+    // 演示功能
+    function showDemo(demoType) {
+        // 隐藏所有演示
+        document.querySelectorAll('#demo-container > div').forEach(demo => {
+            demo.style.display = 'none';
+        });
+        
+        // 显示选中的演示
+        document.getElementById('demo-container').style.display = 'block';
+        document.getElementById(`demo-${demoType}`).style.display = 'block';
+        
+        // 滚动到演示区域
+        document.getElementById('demo-container').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetDemo() {
+        document.getElementById('demo-container').style.display = 'none';
+    }
+</script>
+</body> 
+</html>
