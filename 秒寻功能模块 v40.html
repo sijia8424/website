@@ -1,0 +1,2524 @@
+=<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>秒寻-AI驱动的工业元器件选型助手</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --secondary: #0f172a;
+      --accent: #f59e0b;
+      --light: #f8fafc;
+      --dark: #334155;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border-radius: 8px;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 1rem;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      color: var(--primary);
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      color: var(--secondary);
+      font-size: 1.75rem;
+      margin: 1.5rem 0;
+    }
+
+    h3 {
+      color: var(--primary);
+      font-size: 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .subtitle {
+      color: var(--dark);
+      font-size: 1.25rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* 角色导航 */
+    .role-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .role-tab {
+      padding: 1rem 2rem;
+      background-color: white;
+      border: 2px solid #e2e8f0;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: var(--transition);
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .role-tab.active {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .role-tab:hover:not(.active) {
+      border-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* 角色内容 */
+    .role-content {
+      display: none;
+    }
+
+    .role-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    /* 旅程阶段 */
+    .journey-map {
+      display: flex;
+      justify-content: space-between;
+      margin: 2rem 0;
+      position: relative;
+      padding: 2rem 0;
+    }
+
+    .journey-map::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background-color: #e2e8f0;
+      z-index: 1;
+    }
+
+    .stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100px;
+    }
+
+    .stage-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: white;
+      border: 3px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--dark);
+      transition: var(--transition);
+    }
+
+    .stage-name {
+      font-weight: 600;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .stage.active .stage-icon {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: scale(1.1);
+    }
+
+    .stage:hover .stage-icon {
+      border-color: var(--primary-light);
+      transform: scale(1.05);
+    }
+
+    /* 阶段详情 */
+    .stage-details {
+      display: none;
+      background-color: white;
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      margin: 2rem 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .stage-details.active {
+      display: block;
+    }
+
+    /* 详情内容样式 */
+    .detail-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .detail-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .detail-title::before {
+      content: "•";
+      color: var(--primary);
+      font-size: 1.5rem;
+      margin-right: 0.5rem;
+    }
+
+    .detail-content {
+      padding-left: 1.5rem;
+    }
+
+    .detail-item {
+      margin-bottom: 0.5rem;
+    }
+
+    /* 功能高亮 */
+    .feature-highlight {
+      background-color: #eef2ff;
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    }
+
+    .feature-name {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    /* 交互分析 */
+    .interaction-analysis {
+      background-color: white;
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      margin: 3rem 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .interaction-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .interaction-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .interaction-icon {
+      background-color: #eef2ff;
+      color: var(--primary);
+      padding: 0.75rem;
+      border-radius: 50%;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* 动画 */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 按钮 */
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    /* 标签 */
+    .tag {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .tag-feature {
+      background-color: #eef2ff;
+      color: var(--primary);
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .role-tabs {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .journey-map {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 1rem;
+      }
+
+      .stage {
+        min-width: 100px;
+        margin-right: 1rem;
+      }
+
+      .interaction-item {
+        flex-direction: column;
+      }
+
+      .interaction-icon {
+        margin-bottom: 1rem;
+      }
+    }
+
+
+.stage[data-stage="search"] .stage-icon,
+.stage[data-stage="filter"] .stage-icon,
+.stage[data-stage="compare"] .stage-icon,
+.stage[data-stage="sales-marketing"] .stage-icon,
+.stage[data-stage="sales-consult"] .stage-icon {
+  border: 3px solid #e11d48 !important; /* 红色高亮边框 */
+  box-shadow: 0 0 8px rgba(225, 29, 72, 0.5); /* 添加红色阴影效果增强显示 */
+}
+
+
+
+
+
+
+
+
+
+
+
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+
+      <nav style="margin-bottom: 2rem; background-color: var(--primary); padding: 1rem; border-radius: var(--border-radius); display: flex; justify-content: space-evenly; align-items: center;">
+        <a href="#customer-journey" style="color: white; text-decoration: none; padding: 0.5rem 1rem; font-weight: 600; border-radius: var(--border-radius); transition: background-color 0.3s ease;">用户旅程</a>
+        <a href="#core-features" style="color: white; text-decoration: none; padding: 0.5rem 1rem; font-weight: 600; border-radius: var(--border-radius); transition: background-color 0.3s ease;">功能演示</a>
+        <a href="#business-model" style="color: white; text-decoration: none; padding: 0.5rem 1rem; font-weight: 600; border-radius: var(--border-radius); transition: background-color 0.3s ease;">商业模式</a>
+        <a href="#project-plan" style="color: white; text-decoration: none; padding: 0.5rem 1rem; font-weight: 600; border-radius: var(--border-radius); transition: background-color 0.3s ease;">项目计划</a>
+      </nav>
+
+      <style>
+        nav a:hover {
+          background-color: rgba(255, 255, 255, 0.15);
+        }
+      </style>
+
+      <h1 style="margin-bottom: 1.5rem;">秒寻-AI驱动的工业元器件选型助手</h1>
+      <p style="font-size: 32px;">精准匹配，专业无疆</p>
+
+      <!-- 用户价值展示 -->
+      <div style="display: flex; justify-content: center; gap: 3rem; margin-top: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 32px; height: 32px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.1rem;">⚡</div>
+          <span style="font-weight: 600; font-size: 1.1rem;">性能</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 32px; height: 32px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.1rem;">⏱️</div>
+          <span style="font-weight: 600; font-size: 1.1rem;">交期</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 32px; height: 32px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.1rem;">💰</div>
+          <span style="font-weight: 600; font-size: 1.1rem;">成本</span>
+        </div>
+      </div>
+
+      <div style="height: 30px;"></div>
+
+      <p class="subtitle" style="margin-bottom: 1.5rem; line-height: 1.8; font-size: 16px;">面向工业自动化领域的智能体AI平台, 通过工程师级智能体，提升“搜-筛-比-荐-询”的效率</p>
+
+    </header>
+
+
+
+
+<div id="customer-journey" style="background-color: white; border-radius: var(--border-radius); padding: 2rem; margin: 3rem 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+
+
+    <div class="role-tabs">
+      <div class="role-tab active" data-role="engineer">设计工程师</div>
+      <div class="role-tab" data-role="procurement">采购工程师</div>
+      <div class="role-tab" data-role="sales">销售工程师</div>
+      <div class="role-tab" data-role="interaction">跨角色协作</div>
+    </div>
+
+    
+
+<!-- 设计工程师用户旅程 -->
+
+
+
+<div class="role-content active" id="engineer">
+
+  <h2>设计工程师用户旅程</h2>
+  <p>秒寻如何帮助设计人员快速高效地选择合适的元器件</p>
+
+  <div class="journey-map">
+    <div class="stage active" data-stage="need">
+      <div class="stage-icon">需</div>
+      <div class="stage-name">需求阶段</div>
+    </div>
+    <div class="stage" data-stage="search">
+      <div class="stage-icon">搜</div>
+      <div class="stage-name">搜索阶段</div>
+    </div>
+    <div class="stage" data-stage="filter">
+      <div class="stage-icon">筛</div>
+      <div class="stage-name">筛选阶段</div>
+    </div>
+    <div class="stage" data-stage="compare">
+      <div class="stage-icon">比</div>
+      <div class="stage-name">比较阶段</div>
+    </div>
+    <div class="stage" data-stage="inquire">
+      <div class="stage-icon">询</div>
+      <div class="stage-name">咨询阶段</div>
+    </div>
+    <div class="stage" data-stage="decide">
+      <div class="stage-icon">定</div>
+      <div class="stage-name">决策阶段</div>
+    </div>
+  </div>
+
+  <!-- 需求阶段详情 -->
+  <div class="stage-details active" id="need-details">
+    <h3>需求阶段 - 明确技术要求</h3>
+
+    <div class="detail-section">
+      <div class="detail-title">需求触发点</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>技术驱动：</strong>为新设计选择合适元器件，新建BOM
+        </div>
+        <div class="detail-item">
+          <strong>优化驱动：</strong>为满足成本和交期，寻找替代品
+        </div>
+        <div class="detail-item">
+          <strong>供应驱动：</strong>为原有型号停产，供应不稳定，寻找替代品
+        </div>
+        <div class="detail-item">
+          <strong>质量驱动：</strong>为性能不可靠，质量不稳定，需寻找替代品
+        </div>
+        <div class="detail-item">
+          <strong>客制驱动：</strong>为法规标准变化，客户定制需求，需寻找替代品
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">用户信息输入</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>需求收集：</strong>与上游客户讨论技术要求和约束条件
+        </div>
+        <div class="detail-item">
+          <strong>经验参考：</strong>查阅历史设计方案和成功案例
+        </div>
+        <div class="detail-item">
+          <strong>规格整理：</strong>整理关键参数和性能指标清单
+        </div>
+      </div>
+    </div>
+  </div>
+   
+
+  <!-- 搜索阶段详情 -->
+  <div class="stage-details" id="search-details">
+    <h3>搜索阶段 - 快速定位符合需求的元器件</h3>
+
+    <div class="feature-highlight">
+      <div class="feature-name">精确型号查询-查数据，查平替</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>已知型号查询详细参数
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>当设计工程师已知一个特定型号时，需要系统返回该产品的完整技术参数。
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>将这些参数与客户提供的技术规格要求进行比对，确保所选元器件能够满足客户的技术要求。
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>快速验证产品与需求的匹配度，提高技术决策的准确性。
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>已知型号，在搜索框中直接输入完整型号（如"LM317"或"STM32F103C8T6"）
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>展示完整技术参数
+      </div>
+      <div class="detail-item">
+        <strong>附加功能：</strong>一键获取技术规格手册、使用手册、2D图纸、3D模型资源
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">智能语音搜索</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>需求场景：</strong>现场勘查或无法使用键盘时快速查询
+        </div>
+        <div class="detail-item">
+          <strong>用户行为：</strong>使用语音输入型号或关键参数
+        </div>
+        <div class="detail-item">
+          <strong>系统响应：</strong>实时转写并智能补全专业术语，执行搜索
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">图像识别搜索</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>需求场景：</strong>根据实物或包装上的标签进行识别
+        </div>
+        <div class="detail-item">
+          <strong>用户行为：</strong>拍摄或上传元器件图片
+        </div>
+        <div class="detail-item">
+          <strong>系统响应：</strong>AI识别型号和关键信息，提供搜索结果
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 筛选阶段详情 -->
+  <div class="stage-details" id="filter-details">
+    <h3>筛选阶段 - 精确缩小选择范围</h3>
+
+    <div class="feature-highlight">
+      <div class="feature-name">约束条件查询-查推荐</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>基于技术要求推荐型号
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>当设计工程师收到客户的技术要求但没有相关经验可以立即判断出适用型号时，需要基于这些约束条件获取推荐。
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>输入标书上的技术要求，获取系统推荐的多个匹配型号，并按适配度从高到低排序。
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>解决无经验场景下的选型难题，将抽象技术要求转化为具体产品推荐，节省查询时间，避免经验不足导致的选型错误。
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>只知道需求但不知道型号，通过自然语言描述需求，或上传需求文档
+        <div style="margin-left: 1rem; font-style: italic; color: #64748b;">
+          例："需要一个24V供电、4-20mA输出的温度传感器，测量范围0-150℃，防护等级IP67"
+        </div>
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>引导式问答细化需求
+        <ul style="margin-left: 1rem;">
+          <li>根据初始需求，系统提出进一步问题（"是否需要本安型？"、"安装方式是螺纹还是法兰？"）</li>
+          <li>通过对话方式逐步细化需求，条件越具体，结果越精准</li>
+          <li>推荐型号列表（系统自动打分）：按性能适配度从高到低排序</li>
+          <li>打分逻辑：仅基于性能参数（如精度、量程、防护等级）进行评分</li>
+          <li>关键参数对比：突出显示与用户需求的匹配点（颜色标注）</li>
+        </ul>
+      </div>
+    </div>
+
+     <div class="feature-highlight">
+      <div class="feature-name">需求明确助手</div>
+      <div class="detail-item">
+        <strong>智能引导：</strong>系统智能引导用户明确关键技术参数和约束条件
+      </div>
+      <div class="detail-item">
+        <strong>行业术语识别：</strong>自动识别专业术语并提供标准化选项
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>用户描述需求时，系统实时分析并建议完善关键参数
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>生成结构化技术需求清单，为进一步搜索做准备
+      </div>
+    </div>
+  </div>
+
+  <!-- 比较阶段详情 -->
+  <div class="stage-details" id="compare-details">
+    <h3>比较阶段 - 深入分析与决策</h3>
+
+    <div class="feature-highlight">
+      <div class="feature-name">多型号间比较-查优劣</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>多候选型号的综合分析
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>当用户已经多型号或者已筛选出多个可能适合的型号后，需要进行深入的多维度比较分析。
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>缩小选择范围，避免信息过载，集中精力评估打分最高的几个选项。
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>比较性能参数，提供最佳选择建议，节省筛选时间，提高决策效率，确保选择的元器件最符合实际应用需求。
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>用户选择多个候选元器件（通常是2-5个），设置比较参数的权重或优先级（如性能优先、交期优先或成本优先）
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>为每个候选型号提供基于用户需求的适配度综合评分
+        <ul style="margin-left: 1rem;">
+          <li>推荐型号列表（系统自动打分）：按性能适配度从高到低排序</li>
+          <li>打分逻辑：基于性能，交期和成本进行综合评分</li>
+          <li>关键参数对比：突出显示与用户需求的匹配点（颜色标注）</li>
+          <li>提供详细的参数表格，包含所有技术规格</li>
+          <li>生成直观的雷达图或矩阵图，展示各型号在不同维度的表现</li>
+          <li>允许用户调整重要参数权重，动态更新比较结果</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">对比可视化工具</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>参数矩阵对比：</strong>以表格形式展示所有关键参数的差异，突出显示优劣势
+        </div>
+
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">决策支持分析</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>综合评估：</strong>系统提供综合性能分析建议
+        </div>
+        <div class="detail-item">
+          <strong>适配度评分：</strong>生成应用场景适配度评分，帮助用户做出最终选择
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 咨询阶段详情 -->
+  <div class="stage-details" id="inquire-details">
+    <h3>咨询阶段 - 专业技术支持</h3>
+
+    <div class="feature-highlight">
+      <div class="feature-name">一键咨询-转人工</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>需要专业人员解答复杂技术问题
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>当AI无法完全满足用户的技术疑问，或用户需要更专业的建议时，需要连接到真人专家。
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>获取针对特定应用场景的专业建议，解决复杂技术问题。
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>无需多平台切换即可获得专业支持，加快技术决策过程，降低选型风险。
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>一键发起技术咨询请求，附带已筛选元器件信息和具体问题
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>
+        <ul style="margin-left: 1rem;">
+          <li>自动推荐合适的技术专家</li>
+          <li>自动提取用户浏览和比较历史作为背景信息</li>
+          <li>提供销售智能回答建议，加速响应过程</li>
+          <li>建立结构化的问答记录，便于后续参考</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">触发条件</div>
+      <div class="detail-content">
+        <div class="detail-item"><strong>数据不足：</strong>平台信息不完整或最新规格尚未更新</div>
+        <div class="detail-item"><strong>特殊应用：</strong>需要超出标准参数表的专业应用建议</div>
+        <div class="detail-item"><strong>定制需求：</strong>需要非标准规格或定制化的元器件方案</div>
+        <div class="detail-item"><strong>复杂问题：</strong>需要厂商提供设计建议或技术支持</div>
+        <div class="detail-item"><strong>样品申请：</strong>需要获取实物样品进行测试验证</div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">销售咨询网络</div>
+      <div class="detail-content">
+        <div class="detail-item"><strong>销售咨询匹配：</strong>自动匹配最合适的销售专家</div>
+        <div class="detail-item"><strong>多方通讯：</strong>支持多种沟通方式（即时消息、视频会议、邮件）</div>
+        <div class="detail-item"><strong>答疑归档：</strong>系统自动记录并归类咨询内容，形成知识库</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 决策阶段详情 -->
+<div class="stage-details" id="decide-details">
+  <h3>决策阶段 - 确认选型并流转采购</h3>
+
+  <div class="feature-highlight">
+    <div class="feature-name">选型确认与转发</div>
+    <div class="detail-item">
+      <strong>需求场景：</strong>确认最终元器件选型并流转到采购阶段
+    </div>
+    <div class="detail-item">
+      <strong>需求描述：</strong>当设计工程师经过比较和咨询后确定最终选型，需要将选型结果保存，并转发给采购部门。
+    </div>
+    <div class="detail-item">
+      <strong>使用目的：</strong>标准化选型文档生成，确保采购准确无误，记录选型依据。
+    </div>
+    <div class="detail-item">
+      <strong>用户价值：</strong>提高部门间协作效率，减少信息传递错误，简化选型流程，同步选型及采购活动。
+    </div>
+    <div class="detail-item">
+      <strong>用户行为：</strong>确认最终选择的型号，添加必要决策说明，指定处理流程
+      <div style="margin-left: 1rem; font-style: italic; color: #64748b;">
+        例："选定NTC温度传感器XYZ-103，主要考虑因素：精度、防水等级和交货周期"
+      </div>
+    </div>
+    <div class="detail-item">
+      <strong>系统响应：</strong>生成标准选型报告并提供多种导出选项
+      <ul style="margin-left: 1rem;">
+        <li>生成包含完整技术参数、决策依据的选型报告</li>
+        <li>提供多种导出格式（PDF、Excel、BOM格式）</li>
+        <li>直接发送给指定相关人员（采购、项目经理等），以及平台协作</li>
+        <li>记录完整选型过程，包括比较历史和咨询记录</li>
+        <li>提供替代方案建议以应对潜在供应风险</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-title">BOM管理工具</div>
+    <div class="detail-content">
+      <div class="detail-item">
+        <strong>一键添加到BOM：</strong>将确认的元器件直接添加到项目BOM表
+      </div>
+      <div class="detail-item">
+        <strong>批量导入导出：</strong>支持Excel、CSV等格式的BOM批量处理
+      </div>
+      <div class="detail-item">
+        <strong>BOM版本控制：</strong>记录BOM变更历史，支持版本比较和回溯
+      </div>
+      <div class="detail-item">
+        <strong>BOM成本分析：</strong>提供整体BOM成本估算和优化建议
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-title">选型决策记录</div>
+    <div class="detail-content">
+      <div class="detail-item">
+        <strong>决策理由文档：</strong>记录选型决策的技术和商业原因
+      </div>
+      <div class="detail-item">
+        <strong>选型证据保存：</strong>保存比较数据、咨询记录等作为选型依据
+      </div>
+      <div class="detail-item">
+        <strong>备选方案记录：</strong>保存次优选择作为备选方案
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-title">协作功能</div>
+    <div class="detail-content">
+      <div class="detail-item">
+        <strong>审批流程：</strong>支持多级审批流程，确保选型符合公司标准
+      </div>
+      <div class="detail-item">
+        <strong>团队协作：</strong>允许项目团队成员查看和评论选型决策
+      </div>
+      <div class="detail-item">
+        <strong>通知系统：</strong>自动通知相关人员选型状态更新
+      </div>
+      <div class="detail-item">
+        <strong>与PLM/ERP集成（目前不开放）：</strong>支持与企业已有系统无缝对接
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- 采购工程师用户旅程 -->
+    <div class="role-content" id="procurement">
+      <h2>采购工程师用户旅程</h2>
+      <p>秒寻如何帮助采购工程师更高效地询比价以及管理订单</p>
+
+      <div class="journey-map">
+        <div class="stage active" data-stage="proc-need">
+          <div class="stage-icon">需</div>
+          <div class="stage-name">需求阶段</div>
+        </div>
+        <div class="stage" data-stage="proc-filter">
+          <div class="stage-icon">筛</div>
+          <div class="stage-name">筛选阶段</div>
+        </div>
+        <div class="stage" data-stage="proc-inquire">
+          <div class="stage-icon">询</div>
+          <div class="stage-name">询价阶段</div>
+        </div>
+        <div class="stage" data-stage="proc-compare">
+          <div class="stage-icon">比</div>
+          <div class="stage-name">比价阶段</div>
+        </div>
+        <div class="stage" data-stage="proc-order">
+          <div class="stage-icon">订</div>
+          <div class="stage-name">订单阶段</div>
+        </div>
+      </div>
+
+      <!-- 采购需求阶段详情 -->
+      <div class="stage-details active" id="proc-need-details">
+        <h3>需求阶段</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">需求确认行为</div>
+          <div class="detail-content">
+            <div class="detail-item">与设计工程师就技术规格进行沟通确认</div>
+            <div class="detail-item">标记可替代型号的灵活度范围</div>
+            <div class="detail-item">确定采购优先级（交期/成本/品质）</div>
+            <div class="detail-item">采购无专业知识只能比价格</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 采购筛选阶段详情 -->
+      <div class="stage-details" id="proc-filter-details">
+        <h3>筛选阶段</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">供应商筛选行为</div>
+          <div class="detail-content">
+            <div class="detail-item">按地区、认证资质、历史合作记录筛选供应商</div>
+            <div class="detail-item">查看供应商评分和交付能力数据</div>
+            <div class="detail-item">筛选授权代理商或原厂直供渠道</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 采购询价阶段详情 -->
+      <div class="stage-details" id="proc-inquire-details">
+        <h3>询价阶段</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">询价行为</div>
+          <div class="detail-content">
+            <div class="detail-item">多渠道供应商推荐，支持一键询价</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 采购比价阶段详情 -->
+      <div class="stage-details" id="proc-compare-details">
+        <h3>比价阶段</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">比价行为</div>
+          <div class="detail-content">
+            <div class="detail-item">接收报价、交期、最小订购量等信息</div>
+            <div class="detail-item">智能分析总结：综合对比供应商报价、交期和服务条款</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 采购订单阶段详情 -->
+      <div class="stage-details" id="proc-order-details">
+        <h3>订单阶段</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">订单执行行为</div>
+          <div class="detail-content">
+            <div class="detail-item">系统生成标准采购订单</div>
+            <div class="detail-item">集成式下单流程，一键发送给供应商</div>
+            <div class="detail-item">订单跟踪与状态更新</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 销售工程师用户旅程 -->
+<div class="role-content" id="sales">
+  <h2>销售工程师用户旅程</h2>
+  <p>秒寻如何帮助销售工程师提升技术咨询及询盘的质量和效率</p>
+
+  <div class="journey-map">
+    <div class="stage active" data-stage="sales-marketing">
+      <div class="stage-icon">营</div>
+      <div class="stage-name">营销阶段</div>
+    </div>
+    <div class="stage" data-stage="sales-consult">
+      <div class="stage-icon">咨</div>
+      <div class="stage-name">咨询阶段</div>
+    </div>
+    <div class="stage" data-stage="sales-deal">
+      <div class="stage-icon">售</div>
+      <div class="stage-name">售卖阶段</div>
+    </div>
+    <div class="stage" data-stage="sales-service">
+      <div class="stage-icon">服</div>
+      <div class="stage-name">服务阶段</div>
+    </div>
+  </div>
+
+  <!-- 营销阶段详情 -->
+  <div class="stage-details active" id="sales-marketing-details">
+    <h3>营销阶段 - 完善产品数据与提升询盘机会</h3>
+
+    <div class="feature-highlight">
+      <div class="feature-name">产品数据管理</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>销售工程师需要快速上传和管理产品数据，确保设计工程师和采购工程师能找到最新最全的信息
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>批量上传和维护产品技术参数、规格说明，提供专业的产品资料，吸引潜在客户
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>创建高质量产品档案，提高产品在平台的可发现性和专业度
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>减少90%产品数据管理时间，自动化数据质量检查，增加询盘机会
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>批量上传产品数据，维护产品生命周期状态
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>数据质量自动评分，提供优化建议
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">数据质量管理</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>实时数据健康度监控：</strong>系统自动检测数据完整性、准确性，提供质量评分和优化建议
+        </div>
+        <div class="detail-item">
+          <strong>定期更新提醒：</strong>产品生命周期、停产计划、新型号发布等关键信息变更时，系统自动提醒更新
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 咨询阶段详情 -->
+  <div class="stage-details" id="sales-consult-details">
+    <h3>咨询阶段 - 智能高效的技术支持</h3>
+
+    <div class="feature-highlight">
+      <div class="feature-name">设计工程师具体型号咨询</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>设计工程师通过秒寻AI工具未能完全解决的技术问题，需要人工销售工程师提供专业支持
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>针对特定型号的深度技术咨询，包括应用限制、参数解释、兼容性问题或定制需求等
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>为设计工程师提供AI无法完全覆盖的专业判断和行业经验，解决复杂技术疑问
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>提高咨询响应速度70%，答复准确率提升40%，强化销售工程师专业形象，提高转化率
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>
+        <div style="margin-left: 1rem;">
+          <ul style="list-style-type: disc;">
+            <li>接收系统分配的技术咨询请求，查看详细咨询内容</li>
+            <li>参考系统生成的回答建议，结合自身专业知识进行回复</li>
+          </ul>
+        </div>
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>
+        <div style="margin-left: 1rem;">
+          <ul style="list-style-type: disc;">
+            <li>总结设计工程师与系统的对话历史，锚定需求及询问背景</li>
+            <li>基于AI生成回答建议，但标注需要人工确认的关键点</li>
+            <li>记录咨询对话内容并生成录入到知识库，用于未来类似问题的快速响应</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  
+    <!-- 采购工程师交期价格咨询 -->
+    <div class="feature-highlight">
+      <div class="feature-name">采购工程师交期价格咨询</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>型号性能已确定，采购工程师需要了解供应渠道、交期和具体价格以做出采购决策
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>采购需要知道特定型号的实时库存情况、批量价格、交付周期，以及是否有替代供应渠道
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>快速提供准确的商务信息，帮助采购优化订单策略，平衡成本与交期需求
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>缩短询价响应时间75%，减少多轮沟通，为采购提供全面透明的供应链信息，支持更高效的决策
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>
+        <div style="margin-left: 1rem;">
+          <ul style="list-style-type: disc;">
+	    <li>接收系统分配的采购咨询请求，查看详细咨询内容</li>
+          </ul>
+        </div>
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>
+        <div style="margin-left: 1rem;">
+          <ul style="list-style-type: disc;">
+	    <li>总结采购工程师与系统的对话历史，锚定需求及询问背景</li>
+            <li>基于AI生成回答建议，但标注需要人工确认的关键点</li>
+            <li>记录咨询对话内容并生成录入到知识库，用于未来类似问题的快速响应</li>            
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">智能客户分析</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>客户偏好分析：</strong>系统自动记录和分析客户的产品浏览历史、比较行为和技术需求特点
+        </div>
+        <div class="detail-item">
+          <strong>需求预测：</strong>基于历史互动数据，预测客户可能感兴趣的相关产品和解决方案
+        </div>
+        <div class="detail-item">
+          <strong>专业程度评估：</strong>识别客户的技术专业程度，调整回复的技术深度和详细度
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">知识库与协作</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>技术问题库：</strong>记录并分类所有技术咨询，形成可搜索知识库，提高复用效率
+        </div>
+        <div class="detail-item">
+          <strong>技术内容创建：</strong>基于常见问题自动生成常见问题解答
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 售卖阶段详情 -->
+  <div class="stage-details" id="sales-deal-details">
+    <h3>售卖阶段 - 智能报价与商务谈判</h3>
+
+    <div class="feature-highlight">
+      <div class="feature-name">询价智能响应</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>采购工程师提交产品询价，销售需要快速准确地提供报价和交期
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>接收系统分配的询价需求，根据产品、数量、客户级别等因素生成专业报价
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>提高询价响应速度，提供最具竞争力的价格和交期，增加成交几率
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>询价响应时间从平均2小时缩短至15分钟，报价准确性提升35%，成交率提高20%
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>
+        <div style="margin-left: 1rem;">
+          <ul style="list-style-type: disc;">
+            <li>接收询价通知，查看产品、数量和客户信息</li>
+            <li>根据系统推荐的价格策略和阶梯定价进行调整</li>
+            <li>确认库存状态和交期，添加商务条款</li>
+            <li>发送报价并跟踪客户反馈</li>
+          </ul>
+        </div>
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>
+        <div style="margin-left: 1rem;">
+          <ul style="list-style-type: disc;">
+            <li>自动生成基础报价单，包含标准价格、阶梯折扣和交期</li>
+            <li>显示历史交易记录和客户价格敏感度分析</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">订单转化跟踪</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>销售漏斗管理：</strong>可视化展示各阶段询价和订单状态，预测成交概率
+        </div>
+        <div class="detail-item">
+          <strong>未转化询价提醒：</strong>智能提醒跟进长期未转化的高价值询价
+        </div>
+        <div class="detail-item">
+          <strong>成交率分析：</strong>按产品线、客户类型和区域分析询价转化率，识别改进机会
+        </div>
+        <div class="detail-item">
+          <strong>销售预测：</strong>基于历史数据和当前漏斗状态，预测未来销售表现
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- 服务阶段详情 -->
+  <div class="stage-details" id="sales-service-details">
+    <h3>服务阶段 - 高效订单管理与售后支持</h3>
+
+    <div class="feature-highlight">
+      <div class="feature-name">订单全周期管理</div>
+      <div class="detail-item">
+        <strong>需求场景：</strong>销售需要实时监控订单状态，主动识别风险并与客户保持沟通
+      </div>
+      <div class="detail-item">
+        <strong>需求描述：</strong>跟踪订单从确认到交付的全流程，及时处理异常情况，确保客户满意
+      </div>
+      <div class="detail-item">
+        <strong>使用目的：</strong>提高订单执行透明度，减少交付风险，增强客户信任和满意度
+      </div>
+      <div class="detail-item">
+        <strong>用户价值：</strong>订单交付准时率提升25%，客户满意度提高30%，减少65%订单跟踪时间
+      </div>
+      <div class="detail-item">
+        <strong>用户行为：</strong>
+        <div style="margin-left: 1rem;">
+          <ul style="list-style-type: disc;">
+            <li>监控订单状态仪表板，关注异常提醒</li>
+            <li>处理交期风险、物料短缺等异常情况</li>
+            <li>向客户主动推送订单状态更新和预警</li>
+            <li>协调内部资源解决交付问题</li>
+          </ul>
+        </div>
+      </div>
+      <div class="detail-item">
+        <strong>系统响应：</strong>
+        <div style="margin-left: 1rem;">
+          <ul style="list-style-type: disc;">
+            <li>实时监控订单状态，自动检测偏差和风险</li>
+            <li>生成订单进度可视化视图和风险评估</li>
+            <li>提供异常处理建议和协调流程</li>
+            <li>自动向客户推送关键状态更新</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">客户关系维护</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>客户档案管理：</strong>全面记录客户偏好、接触历史和决策流程，建立深度客户洞察
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">技术售后支持</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>问题知识库共享：</strong>将常见技术问题及解决方案整理为知识库，供客户自助查询
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">商机扩展管理</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>交叉销售推荐：</strong>基于客户现有产品组合，智能推荐匹配的补充产品和解决方案
+        </div>
+        <div class="detail-item">
+          <strong>升级机会提醒：</strong>识别客户产品更新、升级和替换时机，提前规划销售策略
+        </div>
+        <div class="detail-item">
+          <strong>项目扩展追踪：</strong>追踪客户项目进展，识别新阶段带来的产品需求机会
+        </div>
+        <div class="detail-item">
+          <strong>客户反馈收集：</strong>系统化收集客户意见和建议，推动产品改进和创新
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">绩效与持续改进</div>
+      <div class="detail-content">
+        <div class="detail-item">
+          <strong>服务效率分析：</strong>分析响应时间、解决率和服务质量，识别优化机会
+        </div>
+        <div class="detail-item">
+          <strong>个人绩效仪表板：</strong>提供销售工程师个人KPI实时跟踪，包括客户满意度、响应时间等
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- 跨角色协作用户旅程 -->
+    <div class="role-content" id="interaction">
+      <h2>跨角色协作</h2>
+      <p>秒寻如何打通不同角色之间的协作壁垒</p>
+
+      <!-- 工业元器件供应链层级与流向 -->
+      <div style="background-color: white; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; margin: 1.5rem 0;">
+        <h3 style="margin-bottom: 1.5rem;">工业元器件供应链层级与流向</h3>
+
+        <div style="position: relative; min-height: 650px; margin-bottom: 1.5rem;">
+          <!-- 中央垂直连接线 -->
+          <div style="position: absolute; top: 70px; left: 50%; transform: translateX(-50%); width: 4px; height: 580px; background-color: var(--primary); opacity: 0.15; z-index: 1; border-radius: 2px;"></div>
+
+          
+          <!-- 层级1: 原厂 -->
+          <div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+            <div style="width: 240px; padding: 1rem; background-color: var(--primary); color: white; text-align: center; border-radius: var(--border-radius); position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="font-weight: 600; margin-bottom: 0.5rem;">1. 原厂</div>
+              <div style="font-size: 0.9rem;">生产芯片、传感器、机械部件等基础元器件</div>
+            </div>
+          </div>
+
+          <!-- 层级2: 授权分销商 -->
+          <div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+            <div style="width: 240px; padding: 1rem; background-color: var(--primary); color: white; text-align: center; border-radius: var(--border-radius); position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="font-weight: 600; margin-bottom: 0.5rem;">2. 授权分销商</div>
+              <div style="font-size: 0.9rem;">直接从原厂获取授权分销产品</div>
+            </div>
+          </div>
+
+          <!-- 横向连接线 -->
+          <div style="position: absolute; top: 280px; left: 26%; width: 48%; height: 3px; background-color: var(--primary); opacity: 0.15; z-index: 1;"></div>
+
+          <!-- 层级3: 区域代理商与独立分销商 (并列) -->
+          <div style="display: flex; justify-content: space-between; margin: 0 auto; width: 85%; margin-bottom: 2rem;">
+            <!-- 区域代理商 -->
+            <div style="width: 200px; padding: 1rem; background-color: var(--primary); color: light red; text-align: center; border-radius: var(--border-radius); position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="font-weight: 600; margin-bottom: 0.5rem;">3a. 区域代理商</div>
+              <div style="font-size: 0.9rem;">负责特定区域的销售</div>
+            </div>
+
+            <!-- 独立分销商 -->
+            <div style="width: 200px; padding: 1rem; background-color: var(--primary); color: light red; text-align: center; border-radius: var(--border-radius); position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="font-weight: 600; margin-bottom: 0.5rem;">3b. 独立分销商</div>
+              <div style="font-size: 0.9rem;">提供现货或紧缺物料</div>
+            </div>
+          </div>
+
+          <!-- B2B采购平台 -->
+          <div style="display: flex; justify-content: flex-end; margin-right: 7.5%; margin-bottom: 1rem;">
+            <div style="width: 180px; padding: 0.7rem; background-color: var(--primary); color: white; text-align: center; border-radius: var(--border-radius); position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="font-weight: 600; font-size: 0.9rem;">B2B采购平台</div>
+            </div>
+          </div>
+
+          <!-- 汇合连接线 -->
+          <div style="position: absolute; top: 320px; left: 25%; height: 75px; width: 3px; background-color: var(--primary); opacity: 0.15; z-index: 1;"></div>
+          <div style="position: absolute; top: 320px; right: 25%; height: 75px; width: 3px; background-color: var(--primary); opacity: 0.15; z-index: 1;"></div>
+          <div style="position: absolute; top: 395px; left: 25%; width: 50%; height: 3px; background-color: var(--primary); opacity: 0.15; z-index: 1;"></div>
+
+          <!-- 层级4: 合约制造商 -->
+          <div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+            <div style="width: 240px; padding: 1rem; background-color: var(--primary); color: white; text-align: center; border-radius: var(--border-radius); position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.8);">
+              <div style="font-weight: 600; margin-bottom: 0.5rem;">4. 合约制造商(CM)</div>
+              <div style="font-size: 0.9rem;">生产设备本体与模块</div>
+            </div>
+          </div>
+
+          <!-- 层级5: 系统集成商 -->
+          <div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+            <div style="width: 240px; padding: 1rem; background-color: var(--primary); color: light red; text-align: center; border-radius: var(--border-radius); position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.8);">
+              <div style="font-weight: 600; margin-bottom: 0.5rem;">5. 系统集成商(SI)</div>
+              <div style="font-size: 0.9rem;">整合设备、软件、网络，提供完整系统解决方案</div>
+            </div>
+          </div>
+
+          <!-- 层级6: 终端客户 -->
+          <div style="display: flex; justify-content: center;">
+            <div style="width: 240px; padding: 1rem; background-color: var(--primary); color: white; text-align: center; border-radius: var(--border-radius); position: relative; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="font-weight: 600; margin-bottom: 0.5rem;">6. 终端客户</div>
+              <div style="font-size: 0.9rem;">汽车厂、3C工厂等</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 流向说明 -->
+        <div style="background-color: #f8fafc; padding: 1.2rem; border-radius: var(--border-radius); font-size: 0.95rem; margin-top: 1rem;">
+          <div style="font-weight: 600; margin-bottom: 0.8rem;">供应链层级与流向说明:</div>
+          <ul style="padding-left: 1.5rem; margin-bottom: 0; line-height: 1.6;">
+            <li><strong>第一层 → 第二层:</strong> 原厂向授权分销商提供元器件产品及技术支持</li>
+            <li><strong>第二层 → 第三层:</strong> 授权分销商向区域代理商和独立分销商分销产品</li>
+            <li><strong>第三层 → 第四层:</strong> 合约制造商通过区域代理商获取常规物料，通过B2B平台从独立分销商处获取紧缺物料</li>
+            <li><strong>第四层 → 第五层:</strong> 系统集成商从合约制造商获取设备和模块进行集成</li>
+            <li><strong>第五层 → 第六层:</strong> 终端客户从系统集成商获取完整的系统解决方案</li>
+          </ul>
+        </div>
+
+        <!-- 挑战点说明 -->
+        <div style="margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 1rem;">
+          <div style="flex: 1; min-width: 250px; background-color: #f1f5f9; padding: 1rem; border-radius: var(--border-radius); border-left: 4px solid var(--primary);">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">信息流断层问题</div>
+            <div style="font-size: 0.9rem;">原厂产品信息、库存状态、生命周期等关键数据在流转过程中大量损失，导致下游客户决策不准确</div>
+          </div>
+          <div style="flex: 1; min-width: 250px; background-color: #f1f5f9; padding: 1rem; border-radius: var(--border-radius); border-left: 4px solid var(--primary);">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">多层级传递挑战</div>
+            <div style="font-size: 0.9rem;">层级传递导致信息延迟，尤其在缺货、停产等紧急情况下，响应速度慢导致供应链风险扩大</div>
+          </div>
+          <div style="flex: 1; min-width: 250px; background-color: #f1f5f9; padding: 1rem; border-radius: var(--border-radius); border-left: 4px solid var(--primary);">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">秒寻价值点</div>
+            <div style="font-size: 0.9rem;">打通各层级信息壁垒，实现元器件技术数据、供应状态的快速准确传递，降低沟通成本提高决策效率</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="journey-map">
+
+        <div class="stage active" data-stage="inter-engineer-sales">
+          <div class="stage-icon">工销</div>
+          <div class="stage-name">工程师与销售</div>
+        </div>
+        <div class="stage" data-stage="inter-engineer-procurement">
+          <div class="stage-icon">工采</div>
+          <div class="stage-name">工程师与采购</div>
+        </div>
+        <div class="stage" data-stage="inter-procurement-sales">
+          <div class="stage-icon">采销</div>
+          <div class="stage-name">采购与销售</div>
+        </div>
+        <div class="stage" data-stage="inter-full-process">
+          <div class="stage-icon">全流</div>
+          <div class="stage-name">完整流程</div>
+        </div>
+      </div>
+
+      <!-- 工程师与销售协作详情 -->
+      <div class="stage-details active" id="inter-engineer-sales-details">
+        <h3>设计工程师与销售工程师的技术沟通</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">实际场景举例</div>
+          <div class="detail-content">
+            <div class="detail-item"><strong>STEP1:</strong> 设计工程师正在寻找一款5G通信模块，通过"秒寻"平台的约束条件查询功能输入了温度范围(-40°C~85°C)、传输速率(>1Gbps)等参数后，系统推荐了几款合适的产品。但对于其中一款模块在高温环境下的功耗表现，工程师存在疑问。</div>
+            <div class="detail-item"><strong>STEP2:</strong> 设计工程师在多型号综合比较界面直接点击"咨询"按钮</div>
+            <div class="detail-item"><strong>STEP3:</strong> 系统自动将工程师关注的3款5G模块信息（包括之前的筛选条件和比较结果）作为背景信息，同时附带问题"TX功率在85°C最大负载下的温升情况如何？特别关注热稳定性"推送给对应销售</div>
+<div class="detail-item"><strong>STEP4:</strong> 销售工程师通过技术咨询响应流程收到咨询后，系统自动提供了智能回答建议，同时标注了需要人工确认的关键点</div>
+<div class="detail-item"><strong>STEP5:</strong> 销售工程师除了回复标准答案，还基于系统提供的工程师浏览历史分析，发现其设计需要在户外环境使用，因此补充建议："考虑到您的应用场景需要户外工作，建议选择XYZ-500型号，它采用了创新散热设计，在85°C环境下仍能保持稳定性能，且支持5G SA/NSA双模式"</div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">信息传递优势</div>
+          <div class="detail-content">
+            <div class="detail-item"><strong>1. 浏览历史同步：</strong> 销售能看到工程师已经通过精确型号查询功能查看过哪些产品，通过筛选功能设置了哪些约束条件，并已经使用多型号综合比较工具比较了哪些关键参数，从而更有针对性地回答问题</div>
+            <div class="detail-item"><strong>2. 咨询效率提升：</strong> 工程师无需重复解释复杂的技术背景和产品筛选历程，沟通效率提高约40%，减少信息丢失</div>
+            <div class="detail-item"><strong>3. 知识库积累：</strong> 技术问题及解答自动记录并分类到系统知识库，其他工程师在平台搜索类似问题时可以直接查阅，提高平台整体价值</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 工程师与采购协作详情 -->
+      <div class="stage-details" id="inter-engineer-procurement-details">
+        <h3>设计工程师与采购工程师的日常协作</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">实际场景举例</div>
+          <div class="detail-content">
+	    <div class="detail-item"><strong>当设计工程师完成压力传感器选型后，执行以下操作：</strong></div>            
+            <div class="detail-item"><strong>STEP1:</strong> 使用多型号综合比较功能对比后，确定选择PT-100系列压力传感器</div>
+            <div class="detail-item"><strong>STEP2:</strong> 通过选型确认与转发功能，系统自动生成包含完整技术规格的标准选型单，并一键将结果推送给采购工程师</div>
+            <div class="detail-item"><strong>STEP3:</strong> 采购工程师收到通知后，使用供应商筛选功能查询库存和交期信息，发现所选PT-100系列需要等待8周</div>
+	    <div class="detail-item"><strong>STEP3:</strong> 采购通过系统直接反馈给工程师："您选的PT-100系列传感器目前供应紧张，需要等8周，但我通过平替品推荐功能发现PT-110系列有相似规格且库存充足，是否可接受替换？"</div>
+ 	    <div class="detail-item"><strong>STEP3:</strong> 设计工程师收到通知后，直接在系统中查看采购推荐的替代型号技术参数对比，使用参数对比功能确认技术兼容性，快速做出决策</div>
+
+
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">问题解决方式</div>
+          <div class="detail-content">
+            <div class="detail-item"><strong>过去：</strong>工程师发邮件给采购→采购打电话询问交期→邮件回复工程师→工程师再研究替代方案→重新发邮件，往返耗时可能3-5天，且每次沟通都可能丢失关键技术信息</div>
+            <div class="detail-item"><strong>现在：</strong>全程在系统内闭环，技术参数自动同步且可实时对比，确保信息准确传递，一般1天内即可完成方案确认，并自动记录整个决策过程</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 采购与销售协作详情 -->
+      <div class="stage-details" id="inter-procurement-sales-details">
+        <h3>采购工程师与销售工程师的商务沟通</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">实际场景举例</div>
+          <div class="detail-content">
+	    <div class="detail-item"><strong>采购工程师通过以下步骤与销售高效沟通：</strong></div>
+            <div class="detail-item"><strong>STEP1:</strong> 采购收到设计工程师通过选型确认与转发功能发送的5款电容选型单</div>
+            <div class="detail-item"><strong>STEP2:</strong> 使用多渠道询价功能，点击"批量询价"按钮</div>
+            <div class="detail-item"><strong>STEP3:</strong> 系统将这5款电容的完整规格参数、预计年用量等信息自动整合为标准询价单，一键发送给多家供应商销售</div>
+            <div class="detail-item"><strong>STEP4:</strong> 销售工程师通过询价智能响应功能收到询价单，系统自动匹配历史报价和库存状态，辅助生成报价建议</div>
+            <div class="detail-item"><strong>STEP5:</strong> 销售回复："尊敬的客户，YC系列电容本月有促销活动，订购1000个以上单价可享受7折优惠，降至0.35元/个，目前有现货可立即发货"</div>
+	    <div class="detail-item"><strong>STEP6:</strong> 采购使用比价行为功能在系统中进行多供应商报价对比，系统智能分析总结各供应商优缺点，辅助采购决策</div>
+            <div class="detail-item"><strong>STEP6:</strong> 最终采购通过系统订单执行行为功能完成订单下单流程</div>
+
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">效率提升点</div>
+          <div class="detail-content">
+            <div class="detail-item"><strong>1.参数传递准确：</strong> 采购无需重复手动输入技术参数，系统自动从设计师选型单继承完整技术要求，减少了沟通错误和信息丢失</div>
+            <div class="detail-item"><strong>2.历史数据追踪：</strong> 系统自动记录所有报价历史和条款变更，便于后续比价和成本控制，提供可追溯性</div>
+            <div class="detail-item"><strong>3.响应时间缩短：</strong> 供应商平均响应时间从传统的2天缩短至4小时内，大幅提升商务处理效率</div>
+	    <div class="detail-item"><strong>4.多方报价比对：</strong> 系统自动生成报价对比表格，包含价格、交期、付款方式等多维度比较，帮助采购做出最佳选择</div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 完整流程协作详情 -->
+      <div class="stage-details" id="inter-full-process-details">
+        <h3>完整元器件选型到采购案例</h3>
+
+        <div class="detail-section">
+          <div class="detail-title">从需求到下单的完整流程</div>
+          <div class="detail-content">
+            <div class="detail-item">
+              <strong>1. 需求确定阶段</strong>
+              <ul style="margin-left: 1rem;">
+                <li>设计工程师通过约束条件查询功能输入："需要一款12V输入、双路5V/3A输出的DC-DC转换器，效率>90%，支持-40°C~85°C工作温度"</li>
+                <li>系统识别关键技术参数并通过需求明确助手功能引导工程师补充额外要求（如尺寸限制、特殊认证等）</li>
+		<li>系统推荐5款符合条件的产品，并按性能适配度排序显示</li>
+              </ul>
+            </div>
+            <div class="detail-item">
+              <strong>2. 技术确认阶段</strong>
+              <ul style="margin-left: 1rem;">
+                <li>工程师使用多型号综合比较功能选出3款进行详细对比，发现一款TI公司的DC-DC转换器参数完全符合但EMC认证信息不完整</li>
+                <li>工程师点击"咨询"按钮，通过技术咨询互动功能向销售提问："这款DC-DC转换器是否已通过EN55032认证？有测试报告吗？"</li>
+                <li>销售通过技术咨询响应流程收到问题，并调取产品资料后回复："已通过认证，我已上传最新测试报告到系统"</li>
+		<li>工程师查看报告确认符合要求后，通过选型确认与转发功能确认选型</li>
+              </ul>
+            </div>
+            <div class="detail-item">
+              <strong>3. 供应确认阶段</strong>
+              <ul style="margin-left: 1rem;">
+                <li>系统自动通知采购部门，包含完整的技术参数和可接受的替代型号范围</li>
+                <li>采购使用供应商筛选行为筛选符合条件的供应商，然后通过多渠道询价功能向3家供应商询价</li>
+                <li>采购收到响应后使用比价行为功能生成对比表格，同时系统的智能分析显示首选型号交期较长</li>
+                <li>采购通过系统请工程师确认是否接受现货替代型号，同时附上参数对比功能生成的差异对比表</li>
+              </ul>
+            </div>
+            <div class="detail-item">
+              <strong>4. 下单执行阶段</strong>
+              <ul style="margin-left: 1rem;">
+                <li>工程师确认替代型号可接受后，采购在系统中使用订单执行行为一键生成规范化的采购订单</li>
+                <li>供应商销售接收订单，确认库存和发货时间</li>
+                <li>系统自动更新项目进度，所有相关人员（设计工程师、采购和项目经理）同步收到状态更新通知</li>
+		<li>系统同时将订单信息同步至BOM管理系统，便于追踪和管理</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">协作效果</div>
+          <div class="detail-content">
+            <div class="detail-item"><strong>跨部门无缝协作：</strong> 整个流程在秒寻系统内完成，无需在邮件、电话和不同系统间切换，实现信息无缝流转</div>
+            <div class="detail-item"><strong>决策记录完整：</strong> 所有选型依据、价格谈判和技术咨询记录完整保存，为后续项目提供参考和追溯依据</div>
+            <div class="detail-item"><strong>流程大幅加速：</strong> 元器件从初次搜索到最终下单的时间从原来的平均2周缩短到3-5天，效率提升70%以上</div>
+            <div class="detail-item"><strong>错误率显著降低：</strong> 系统确保技术参数在流转过程中保持一致，减少了约75%的沟通误差和返工情况</div>
+	    <div class="detail-item"><strong>资源利用优化：</strong> 设计师、采购和销售的工作重点放在决策和核心价值上，而非繁琐的信息传递和整理工作</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 功能演示 -->
+
+
+
+<!-- 功能演示区域 -->
+<div id="features-demo" class="section-container">
+   <h2 class="section-title">功能演示</h2>
+   <!-- 功能选项卡 -->
+   <div class="feature-tabs">
+
+
+
+<!-- 功能切换选项卡 -->
+
+
+<div style="display: flex; margin-bottom: 1.5rem; background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+  <button class="demo-tab active" data-tab="constraint-query" style="flex: 1; padding: 1rem; background-color: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">约束条件查询</button>
+  <button class="demo-tab" data-tab="exact-model" style="flex: 1; padding: 1rem; background-color: white; color: var(--primary); border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">精确型号查询</button>
+  <button class="demo-tab" data-tab="model-comparison" style="flex: 1; padding: 1rem; background-color: white; color: var(--primary); border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">多型号比较</button>
+  <button class="demo-tab" data-tab="one-click-consult" style="flex: 1; padding: 1rem; background-color: white; color: var(--primary); border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">一键咨询</button>
+  <button class="demo-tab" data-tab="bom-upload" style="flex: 1; padding: 1rem; background-color: white; color: var(--primary); border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">BOM上传</button>
+</div>
+
+ </div>
+
+
+<!-- 功能内容区域 -->
+
+<div class="feature-content">
+
+
+<!-- 约束条件查询功能演示 -->
+
+
+<div id="constraint-query-content" class="demo-content" style="display: block;">
+
+
+
+<div id="core-features" style="background-color: #f0f7ff; border-radius: 12px; padding: 2rem; margin: 3rem 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    
+
+
+
+<div style="display: flex; align-items: center; gap: 1rem;">
+      <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;">约束条件查询</h2>
+      <span style="color: #666; font-size: 1rem;">伺服电机示例</span>
+    </div>
+
+
+
+    <div style="display: flex; gap: 0.8rem;">
+      <button style="background-color: #2563eb; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        比较
+      </button>
+      <button style="background-color: #2563eb; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        聊天
+      </button>
+      <button style="background-color: white; color: #2563eb; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+          <polyline points="16 6 12 2 8 6"></polyline>
+          <line x1="12" y1="2" x2="12" y2="15"></line>
+        </svg>
+        分享
+      </button>
+      <button style="background-color: white; color: #2563eb; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        下载
+      </button>
+    </div>
+  </div>
+  
+  <div style="display: flex; gap: 2rem; height: 600px;">
+    <!-- 左侧查询和历史区域 -->
+    <div style="flex: 1; background-color: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+      <!-- 对话内容 -->
+      <div style="flex-grow: 1; overflow-y: auto; margin-bottom: 1rem;">
+        <!-- 用户初始消息 -->
+        <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+          <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
+            <p style="margin: 0;">我需要查找一款适合高精度定位控制系统的伺服电机，大约2kW功率左右，转速要达到3000rpm，您能帮我找到合适的产品吗？</p>
+          </div>
+          <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+        </div>
+
+        <!-- AI回复询问更多细节 -->
+        <div style="display: flex; margin-bottom: 1rem;">
+          <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+              <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+              <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+              <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+            </svg>
+          </div>
+          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <p style="margin-top: 0; margin-bottom: 0.5rem;">我可以帮您查找合适的伺服电机。为了提供更准确的结果，请问：</p>
+            <ul style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
+              <li>您对电机扭矩有具体要求吗？根据功率和转速计算，约需6.4Nm左右</li>
+              <li>需要特定的通信协议吗？例如EtherCAT、PROFINET等</li>
+              <li>对电机的反馈精度有特殊要求吗？</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 用户回复更多细节 -->
+        <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+          <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
+            <p style="margin: 0;">扭矩需求是6.37Nm左右，通信协议必须支持EtherCAT，这是为了配合现有的控制系统。因为是用于高精度定位控制，所以精度越高越好。</p>
+          </div>
+          <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+        </div>
+
+        <!-- AI确认条件 -->
+        <div style="display: flex; margin-bottom: 1rem;">
+          <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+              <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+              <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+              <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+            </svg>
+          </div>
+          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <p style="margin-top: 0; margin-bottom: 0.5rem;">我将基于您提供的约束条件查找合适的伺服电机产品：</p>
+            <ul style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
+              <li>额定功率: 2kW</li>
+              <li>额定转速: 3000rpm</li>
+              <li>额定扭矩: 6.37Nm</li>
+              <li>通信协议: EtherCAT</li>
+              <li>应用场景: 高精度定位控制系统</li>
+            </ul>
+            <p style="margin-bottom: 0;">我是否理解正确？如需调整，请直接修改条件。</p>
+          </div>
+        </div>
+        
+        <!-- 用户消息 -->
+        <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+          <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
+            <p style="margin: 0;">是的，条件正确，请帮我查找合适的产品。我希望电机的精度越高越好。</p>
+          </div>
+          <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+        </div>
+        
+        <!-- AI回复查询结果 -->
+        <div style="display: flex; margin-bottom: 1rem;">
+          <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+              <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+              <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+              <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+            </svg>
+          </div>
+          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <p style="margin-top: 0; margin-bottom: 0.5rem;">我已为您找到符合条件的高精度伺服电机型号。您可以在右侧查看详细比较表格。</p>        
+          </div>
+        </div>
+      </div>
+      
+      <!-- 消息输入框 -->
+      <div style="display: flex; align-items: center; margin-top: 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <input type="text" placeholder="输入更多需求或问题..." style="flex-grow: 1; padding: 0.8rem 1rem; border: none; outline: none;">
+        <button style="background-color: #2563eb; color: white; border: none; padding: 2.8rem 1.2rem; display: flex; align-items: center; cursor: pointer;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 右侧结果展示区域 -->
+    <div style="flex: 2.5; background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 100%;">
+      <div style="padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0;">
+        <div>10 产品已找到</div>
+        <div>
+          <button style="background-color: transparent; border: none; padding: 0.4rem; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 表格头部 - 固定在顶部 -->
+<div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; background-color: #f8fafc; padding: 0.8rem 1.2rem; font-weight: 500; color: #000000; border-bottom: 1px solid #e2e8f0; font-size: 12px;">
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <input type="checkbox" style="width: 16px; height: 16px;">
+  </div>
+  <div style="text-align: left;">型号</div>
+  <div style="text-align: center;">评级</div>
+  <div style="text-align: center;">打分</div>
+  <div style="text-align: left;">描述</div>
+  <div style="text-align: left;">制造商</div>
+</div>
+
+<!-- 表格内容区域 - 可滚动 -->
+<div style="flex-grow: 1; overflow-y: auto; font-size: 12px; max-height: calc(100% - 80px);">
+  <!-- 表格行 - 第一行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">MR-J5-20G</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">替换 DROP IN</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.98</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW AC伺服电机，23bit高精度编码器，支持EtherCAT通信，额定扭矩6.7Nm，最高转速3000rpm</div>
+    <div style="text-align: left;">三菱电机</div>
+  </div>
+
+  <!-- 表格行 - 第二行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">R88M-1M20030H-S2</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">形配 FORM&FIT</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.95</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW伺服电机，20bit高分辨率编码器，支持EtherCAT协议，额定扭矩6.37Nm，适用于精密定位控制</div>
+    <div style="text-align: left;">欧姆龙</div>
+  </div>
+
+  <!-- 表格行 - 第三行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">SBM-02VBD1-E</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.87</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW伺服电机，支持EtherCAT通信协议，额定扭矩6.4Nm，最高转速3000rpm，适合高精度定位系统</div>
+    <div style="text-align: left;">安川电机</div>
+  </div>
+
+  <!-- 表格行 - 第四行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">AKM22G-ACCNC-02</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.80</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW高性能伺服电机，24bit高精度编码器，支持EtherCAT总线，额定扭矩6.6Nm，定位精度±0.001°</div>
+    <div style="text-align: left;">科尔摩根</div>
+  </div>
+
+  <!-- 表格行 - 第五行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">MS2N07-XXXXX</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.73</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.1kW同步伺服电机，支持EtherCAT总线通信，额定扭矩6.7Nm，转速范围0-3000rpm</div>
+    <div style="text-align: left;">博世力士乐</div>
+  </div>
+
+  <!-- 表格行 - 第六行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">SGM7G-20A</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.71</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW伺服电机，23bit高分辨率编码器，支持EtherCAT通信，额定扭矩6.37Nm，最高转速2000rpm</div>
+    <div style="text-align: left;">安川电机</div>
+  </div>
+
+  <!-- 表格行 - 第七行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">1FK7063-5AF71</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.69</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW伺服电机，支持PROFINET总线通信，额定扭矩6.4Nm，转速范围0-3000rpm，适合精密运动控制</div>
+    <div style="text-align: left;">西门子</div>
+  </div>
+
+  <!-- 表格行 - 第八行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">MHMD022G1U</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.68</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW伺服电机，20bit增量式编码器，支持EtherCAT，额定扭矩6.5Nm，最高转速3000rpm</div>
+    <div style="text-align: left;">松下电器</div>
+  </div>
+
+  <!-- 表格行 - 第九行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">CMP80S/BP/KY/AZ</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.65</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.2kW永磁同步伺服电机，支持多种总线协议，额定扭矩6.8Nm，转速范围0-3500rpm</div>
+    <div style="text-align: left;">SEW</div>
+  </div>
+
+  <!-- 表格行 - 第十行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">AKMH-22C-ABC-2E</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.62</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW食品级伺服电机，IP67防护等级，支持EtherCAT通信，额定扭矩6.5Nm，可用于高卫生要求场合</div>
+    <div style="text-align: left;">科尔摩根</div>
+  </div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- 精确型号查询功能演示 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+<!-- 商业模式画布 -->
+<div id="business-model" style="background-color: white; border-radius: var(--border-radius); padding: 2rem; margin: 3rem 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+  <h2 style="text-align: center; margin-bottom: 1rem;">商业模式</h2>
+  <p style="text-align: center; margin-bottom: 2.5rem; font-size: 1rem;">Find in Seconds, Decide in Minutes, Order in Hours, Delivery in Days</p>
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, minmax(250px, auto)); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- 第一行 -->
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">关键合作伙伴</h3>
+      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <li style="margin-bottom: 1rem; line-height: 1.4;">系统集成商</li>
+        <li style="margin-bottom: 1rem; line-height: 1.4;">区域代理商/独立分销商</li>        
+        <li style="line-height: 1.4;">元器件原厂制造商</li>
+      </ul>
+    </div>
+
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">关键活动</h3>
+      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <li style="margin-bottom: 1rem; line-height: 1.4;">元器件数据采集与结构化</li>
+        <li style="margin-bottom: 1rem; line-height: 1.4;">AI选型与推荐算法开发</li>
+        <li style="margin-bottom: 1rem; line-height: 1.4;">跨角色协作流程优化</li>
+        <li style="line-height: 1.4;">用户及数据生态飞轮构建</li>
+      </ul>
+    </div>
+
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">价值主张</h3>
+      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>精准快速选型-Find in Seconds：</strong>通过AI引导式的"搜-筛-比"流程，将选型效率提升80%</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>数据智能分析-Decide in Minutes：</strong>基于性能、交期、成本多维度的选型决策支持</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>跨角色协同-Order in Hours：</strong>打通工程师、采购与销售信息壁垒，缩短70%沟通时间</li>
+        <li style="line-height: 1.4;"><strong>标准化交付-Deliver in Days：</strong>规范化BOM、询价、订单及交付流程</li>
+      </ul>
+    </div>
+
+    <!-- 第二行 -->
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">关键资源-ABCDE</h3>
+      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;">领域化AI选型模型-<strong>A</strong>lgorithm</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;">供应链数据整合能力-<strong>B</strong>ig Data</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;">协作平台技术-<strong>C</strong>ollaborative Platform</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;">结构化元器件知识图谱-<strong>D</strong>omain Knowledge</li>
+        <li style="line-height: 1.4;">生态系统网络-<strong>E</strong>cosystem Network</li>
+      </ul>
+    </div>
+
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">客户关系</h3>
+      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <li style="margin-bottom: 2rem; line-height: 1.5;"><strong>STEP 1: AI Copilot</strong><br>AI辅助自助服务</li>
+        <li style="line-height: 1.5;"><strong>STEP 2: AI Agent</strong><br>一键采销咨询对接，从订单到交付</li>
+      </ul>
+    </div>
+
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">客户细分</h3>
+      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>设计工程师：</strong>需要高效选型、参数比较与技术咨询</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>采购工程师：</strong>需要供应商筛选、询价比价与订单管理</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>销售工程师：</strong>需要产品推广、客户触达与市场洞察</li>        
+        <li style="line-height: 1.4;"><strong>客户服务：</strong>需要咨询响应，销售转化与订单跟踪</li>
+      </ul>
+    </div>
+
+    <!-- 第三行 -->
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">成本结构</h3>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <h4 style="font-size: 1rem; margin: 0 0 0.75rem 0; color: #4a5568;">研发与运营成本</h4>
+        <ul style="padding-left: 1.25rem; margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.4;">
+          <li style="margin-bottom: 0.5rem;">数据采集与处理</li>          
+          <li style="margin-bottom: 0.5rem;">AI模型开发与优化</li>
+          <li style="margin-bottom: 0.5rem;">SaaS云平台开发与维护</li>  
+        </ul>
+        <h4 style="font-size: 1rem; margin: 0.75rem 0; color: #4a5568;">增长成本</h4>
+        <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; line-height: 1.4;">
+          <li style="margin-bottom: 0.5rem;">用户获取</li>
+          <li style="margin-bottom: 0.5rem;">客户获取</li>
+          <li>合作伙伴生态拓展</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">渠道</h3>
+      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;">SaaS云平台</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;">移动应用与微信小程序</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;">系统集成API</li>
+        <li style="margin-bottom: 0.75rem; line-height: 1.4;">行业展会与技术研讨会</li>
+        <li style="line-height: 1.4;">合作伙伴渠道</li>
+      </ul>
+    </div>
+
+    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">收入来源</h3>
+      <div style="flex-grow: 1;">
+        <h4 style="font-size: 1rem; margin: 0 0 0.75rem 0; color: #4a5568; text-align: center;">增长策略与收入阶段</h4>
+        <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.9rem; list-style: none;">
+          <li style="margin-bottom: 0.6rem; background-color: #e6f7ff; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
+            <strong>STEP 1. 用户积累阶段</strong>：设计工程师免费使用平台全部功能，提升选型效率，降低技术筛选时间80%。目标首年积累10,000名活跃用户。
+          </li>
+          <li style="margin-bottom: 0.6rem; background-color: #e6fff0; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
+            <strong>STEP 2. 销售端变现阶段</strong>：代理商/分销商付费使用平台，每月99-499元不等。提供一键咨询功能连接设计师，获取销售线索。
+          </li>
+          <li style="margin-bottom: 0.6rem; background-color: #f0e6ff; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
+            <strong>STEP 3. 企业服务扩展阶段</strong>：面向系统集成商推出团队版服务，按席位收费（每席位每月199-399元），提升工程效率50%以上。
+          </li>
+          <li style="margin-bottom: 0.6rem; background-color: #fffde6; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
+            <strong>STEP 4. 采购端引入阶段</strong>：吸引采购人员使用平台进行多维比较和供应商评估，降低采购成本8-15%。高级分析功能付费。
+          </li>
+          <li style="background-color: #fff0e6; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
+            <strong>STEP 5. 全面商业化阶段</strong>：建立双向收费模式 - 销售端按成交金额收取交易佣金，采购端企业版按年收取SaaS使用费。
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; margin-top: 1.5rem;">
+    <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center;">商业优势</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between;">
+      <div style="flex: 1; min-width: 250px;">
+        <div style="font-weight: 600; margin-bottom: 0.75rem; text-align: center;">数据网络效应</div>
+        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; text-align: center;">用户越多，数据越丰富，AI选型精度越高，吸引更多用户加入形成正反馈循环</p>
+      </div>
+      <div style="flex: 1; min-width: 250px;">
+        <div style="font-weight: 600; margin-bottom: 0.75rem; text-align: center;">多边平台价值</div>
+        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; text-align: center;">通过打通工程师、采购与销售信息孤岛，解决工业元器件选型中的信息不对称问题</p>
+      </div>
+      <div style="flex: 1; min-width: 250px;">
+        <div style="font-weight: 600; margin-bottom: 0.75rem; text-align: center;">规模化扩展能力</div>
+        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; text-align: center;">AI架构支持横向扩展至更多产品线，纵向整合至供应链更多环节，实现指数级增长</p>
+      </div>
+    </div>
+  </div>
+</div>      
+
+
+
+
+
+
+
+
+<!-- 项目计划 -->
+<div id="project-plan" style="background-color: white; border-radius: var(--border-radius); padding: 2rem; margin: 3rem 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+  <h2 style="text-align: center; margin-bottom: 1.5rem;">项目计划</h2>
+
+  <!-- 项目概述 -->
+  <div style="margin-bottom: 1.5rem; background-color: #f8fafc; padding: 1.25rem; border-radius: var(--border-radius);">
+    <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">1. 项目概述</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+      <div style="flex: 1; min-width: 300px;">
+        <div style="font-weight: 600; margin-bottom: 0.5rem;">项目目标：</div>
+        <p style="margin: 0;">开发"秒寻"平台，实现工业元器件的智能搜索、筛选、比较、推荐和咨询一体化服务。</p>
+      </div>
+      <div style="flex: 1; min-width: 300px;">
+        <div style="font-weight: 600; margin-bottom: 0.5rem;">预期成效：</div>
+        <ul style="padding-left: 1.25rem; margin: 0;">
+          <li style="margin-bottom: 0.25rem;">设计工程师选型效率提升60%</li>
+          <li style="margin-bottom: 0.25rem;">销售工程师响应时间减少70%</li>
+          <li style="margin-bottom: 0.25rem;">采购周期缩短25%</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 项目阶段与任务分解 -->
+  <div style="margin-bottom: 1.5rem;">
+    <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">2. 项目阶段与任务分解</h3>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+      <!-- 阶段一 -->
+      <div style="flex: 1; min-width: 300px; background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
+        <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+          <span>数据采集与处理（2个月）</span>
+        </div>
+        <ul style="padding-left: 2rem; margin: 0.5rem 0;">
+          <li style="margin-bottom: 0.25rem;">爬虫50+以上主流品牌元器件数据: 优先品类排序"型号多，维度多，长尾多“：传感器（温度，油压），伺服电机，气缸，机器人</li>
+          <li style="margin-bottom: 0.25rem;">建立数据模型：参数提取、分类与映射</li>
+        </ul>
+      </div>
+
+      <!-- 阶段二 -->
+      <div style="flex: 1; min-width: 300px; background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
+        <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+          <span>核心功能开发（1个月）</span>
+        </div>
+        <ul style="padding-left: 2rem; margin: 0.5rem 0;">
+          <li style="margin-bottom: 0.25rem;"><Strong>A. 实现"约束条件查询-查推荐"</Strong>（"Check"和"Compare"功能模块），输入方式：通过关键词描述，输出形式：以表格形式展示（含型号类别、评级、匹配分数、描述、制造商等信息）</li>          
+	  <li style="margin-bottom: 0.25rem;"><Strong>B. 实现"精确型号查询-查平替"</Strong>（"Check"和"Compare"功能模块），输入方式：通过型号，输出形式：以表格形式展示结果（含型号类别、评级、匹配分数、描述、制造商等信息）（客户行为关注价格，后续必须增加渠道的价格，交期，库存信息）</li>          
+	  <li style="margin-bottom: 0.25rem;"><Strong>C. 实现"多型号间比较-查优劣"</Strong>（"Check"和"Compare"功能模块），输入方式：通过型号，输出形式：以表格形式+彩色标记差异+优缺点文本摘要</li>
+	  <li style="margin-bottom: 0.25rem;"><Strong>D. 实现"精确型号查询-查数据"</Strong>，输入方式：通过型号，输出形式：带引用来源的文本</li>
+	  
+	  <li style="margin-bottom: 0.25rem;"><Strong>E. 实现"一键咨询"-转人工</Strong>（”Chat“功能模块），输入方式：系统自动汇总用户查询对话历史，帮助销售理解需求，输出形式：实时聊天界面，显示历史查询摘要和需求分析（Winne备注：1. 销售要触达潜在客户群体，还要锁定其中的keyman 2. 销售人员需要深入了解客户需求和痛点，才能提供满足客户期待的解决方案，从而提高成交率) (用户触达-AI需求分析-AI方案推荐-AI用户画像分析“算法”-AI用户成交概率分析“算法”-销售跟单-订单成交)</li>
+
+<li style="margin-bottom: 0.25rem;"><Strong>F. 实现"BOM一键上传-查平替"批量处理</Strong>（"Check"和"Compare"功能模块），输入方式：上传BOM文件（.xlsx、.csv、.txt），输出形式：以表格形式展示全部替代方案</li>
+	  
+        </ul>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+      <!-- 阶段三 -->
+      <div style="flex: 1; min-width: 300px; background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
+        <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
+          <span>用户侧应用开发（2个月）</span>
+        </div>
+        <ul style="padding-left: 2rem; margin: 0.5rem 0;">
+	<li style="margin-bottom: 0.25rem;">Web端，手机端应用开发</li>          
+	<li style="margin-bottom: 0.25rem;">优化工程师"搜-筛-比"模块算法</li>
+        </ul>
+      </div>
+
+      <!-- 阶段四 -->
+      <div style="flex: 1; min-width: 300px; background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
+        <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">4</div>
+          <span>测试与优化（2个月）</span>
+        </div>
+        <ul style="padding-left: 2rem; margin: 0.5rem 0;">
+          <li style="margin-bottom: 0.25rem;">100个用户测试各角色功能模块</li>
+          <li style="margin-bottom: 0.25rem;">调优搜索精准度与推荐算法</li>
+          <li style="margin-bottom: 0.25rem;">优化用户体验</li>
+          <li>系统性能测试与稳定性提升</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 阶段五 -->
+    <div style="background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius);">
+      <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">5</div>
+        <span>商业化与市场推广（2个月）</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+        <div style="flex: 1; min-width: 250px;">
+          <ul style="padding-left: 2rem; margin: 0.5rem 0;">
+            <li style="margin-bottom: 0.25rem;">确定10家天使客户，制定合作策略</li>
+            <li>开发行业标杆案例</li>
+          </ul>
+        </div>
+        <div style="flex: 1; min-width: 250px;">
+          <ul style="padding-left: 2rem; margin: 0.5rem 0;">
+            <li style="margin-bottom: 0.25rem;">设计服务方案与定价模型</li>
+            <li>建立数据供应商合作</li>
+          </ul>
+        </div>
+        <div style="flex: 1; min-width: 250px;">
+          <ul style="padding-left: 2rem; margin: 0.5rem 0;">
+            <li style="margin-bottom: 0.25rem;">上线商业版本</li>
+            <li>建立迭代与反馈机制</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 重点与优先级 -->
+  <div style="margin-bottom: 2rem;">
+    <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0;">3. 重点与优先级</h3>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
+      <!-- 数据策略 -->
+      <div style="flex: 1; min-width: 300px;">
+        <div style="font-weight: 600; margin-bottom: 0.75rem;">数据策略</div>
+        <ul style="padding-left: 1.5rem; margin: 0;">
+          <li style="margin-bottom: 0.25rem;">高质量元器件技术参数是核心，建立完整的初始化数据集以及数据集持续更新</li>
+          <li>优先覆盖工业自动化核心元器件，国内外主流品牌，本土平替品牌</li>
+        </ul>
+      </div>
+
+      <!-- 功能优先级 -->
+      <div style="flex: 1; min-width: 300px;">
+        <div style="font-weight: 600; margin-bottom: 0.75rem;">功能优先级</div>
+        <ol style="padding-left: 1.5rem; margin: 0;">
+	<li style="margin-bottom: 0.25rem;"><strong>约束条件查询-查推荐</strong> - 基于技术要求的型号推荐，按匹配度排列 （a. 根据我给的工况和约束条件，按性能参数匹配度列出可选型号)</li>          
+	<li style="margin-bottom: 0.25rem;"><strong>精确型号查询-查平替</strong></li>
+	<li style="margin-bottom: 0.25rem;"><strong>多型号间比较-查优劣</strong> - 详细比较不同元器件配置、机械电气参数 (a. 帮我比较这三个型号的性能参数，标记差异点，总结优劣势，b. 根据我的技术要求和约束情况，做匹配度分析和总结</li>
+	<li style="margin-bottom: 0.25rem;"><strong>精确型号查询-查数据</strong> - 查找已知型号详细参数，支持与数万个元器件数据表进行对话查询 （a. 帮我列出这个型号的全部性能参数，b. 帮我查询某一个具体性能参数）</li>
+ <li style="margin-bottom: 0.25rem;"><strong>一键咨询-转人工</strong></li> 
+	  <li style="margin-bottom: 0.25rem;"><strong>BOM一键上传-查平替</strong></li>
+	  <li style="margin-bottom: 0.25rem;"><strong>多维度比较（待定，用户认为这个功能非常重要，因为要找平替，降低成本）</strong> - 性能、交期、成本多维对比</li>
+        </ol>
+      </div>
+
+      <!-- 角色优先级 -->
+      <div style="flex: 1; min-width: 300px;">
+        <div style="font-weight: 600; margin-bottom: 0.75rem;">角色优先级</div>
+        <ol style="padding-left: 1.5rem; margin: 0;">
+          <li style="margin-bottom: 0.25rem;">设计工程师 - 选型决策核心用户</li>
+          <li style="margin-bottom: 0.25rem;">销售工程师 - 技术支持与咨询响应</li>
+          <li>采购工程师 - 比价询价与订单管理</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- 项目时间线 -->
+<div style="margin-bottom: 2rem;">
+  <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0;">4. 项目时间线</h3>
+
+  <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius);">
+    <!-- 月份标记 -->
+    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 1</div>
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 2</div>
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 3</div>
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 4</div>
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 5</div>
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 6</div>
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 7</div>
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 8</div>
+      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 9</div>
+    </div>
+
+    <!-- 进度条 -->
+    <div style="width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px; margin-bottom: 1.5rem; display: flex;">
+      <div style="width: 22%; height: 100%; background-color: var(--primary); border-radius: 4px 0 0 4px;"></div>
+      <div style="width: 11%; height: 100%; background-color: var(--primary); opacity: 0.8;"></div>
+      <div style="width: 22%; height: 100%; background-color: var(--primary); opacity: 0.6;"></div>
+      <div style="width: 22%; height: 100%; background-color: var(--primary); opacity: 0.4;"></div>
+      <div style="width: 23%; height: 100%; background-color: var(--primary); opacity: 0.2; border-radius: 0 4px 4px 0;"></div>
+    </div>
+
+    <!-- 项目阶段标记 -->
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
+        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">数据采集与处理</div>
+        <div style="font-size: 0.8rem;">月份 1-2</div>
+      </div>
+
+      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
+        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">核心功能开发</div>
+        <div style="font-size: 0.8rem;">月份 3</div>
+      </div>
+
+      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
+        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">用户侧应用开发</div>
+        <div style="font-size: 0.8rem;">月份 4-5</div>
+      </div>
+
+      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
+        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">测试与优化</div>
+        <div style="font-size: 0.8rem;">月份 6-7</div>
+      </div>
+
+      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
+        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">商业化与市场推广</div>
+        <div style="font-size: 0.8rem;">月份 8-9</div>
+      </div>
+    </div>
+
+    <!-- 关键里程碑 -->
+    <div style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+      <div style="font-weight: 600; margin-bottom: 0.75rem; font-size: 0.95rem;">关键里程碑:</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem;">
+        <div style="flex: 1; min-width: 200px;">
+          <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
+            <div>爬虫完成50+品牌数据 (月份1)</div>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
+            <div>数据模型建立完成 (月份2)</div>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;">
+          <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
+            <div>核心功能模块完成 (月份3)</div>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
+            <div>Web端和移动端应用开发完成 (月份5)</div>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;">
+          <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
+            <div>100个用户测试完成 (月份7)</div>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
+            <div>商业版本上线 (月份9)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    
+              
+
+
+
+  <script>
+    // 角色切换
+    document.querySelectorAll('.role-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // 移除所有活动状态
+        document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.role-content').forEach(c => c.classList.remove('active'));
+        // 设置当前活动状态
+        tab.classList.add('active');
+        const role = tab.getAttribute('data-role');
+        document.getElementById(role).classList.add('active');
+      });
+    });
+    // 旅程阶段切换
+    document.querySelectorAll('.stage').forEach(stage => {
+      stage.addEventListener('click', () => {
+        const parent = stage.closest('.journey-map');
+        const parentContent = parent.closest('.role-content');
+        // 移除父容器内的所有活动状态
+        parent.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+        parentContent.querySelectorAll('.stage-details').forEach(d => d.classList.remove('active'));
+        // 设置当前活动状态
+        stage.classList.add('active');
+        const stageId = stage.getAttribute('data-stage');
+        const detailsElement = parentContent.querySelector(`#${stageId}-details`);
+        if (detailsElement) {
+          detailsElement.classList.add('active');
+        }
+      });
+    });
+
+
+
+
+
+
+  // 将此代码放在HTML底部
+  document.addEventListener('DOMContentLoaded', function() {
+    // 初始化 - 确保第一个选项卡是活跃的
+    const firstTab = document.querySelector('.demo-tab');
+    if(firstTab) {
+      firstTab.style.backgroundColor = 'var(--primary)';
+      firstTab.style.color = 'white';
+      const firstContentId = firstTab.dataset.tab + '-content';
+      const firstContent = document.getElementById(firstContentId);
+      if(firstContent) {
+        firstContent.style.display = 'block';
+      }
+    }
+
+    // 点击处理
+    document.querySelectorAll('.demo-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        console.log('Tab clicked:', this.dataset.tab); // 调试用
+        
+        // 清除所有活跃状态
+        document.querySelectorAll('.demo-tab').forEach(t => {
+          t.style.backgroundColor = 'white';
+          t.style.color = 'var(--primary)';
+        });
+        
+        // 设置当前活跃标签
+        this.style.backgroundColor = 'var(--primary)';
+        this.style.color = 'white';
+        
+        // 隐藏所有内容
+        document.querySelectorAll('.demo-content').forEach(content => {
+          content.style.display = 'none';
+        });
+        
+        // 显示对应内容
+        const targetContent = document.getElementById(this.dataset.tab + '-content');
+        console.log('Target content:', targetContent); // 调试用
+        if (targetContent) {
+          targetContent.style.display = 'block';
+        }
+      });
+    });
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </script>
+
+</body>
+
+</html>
