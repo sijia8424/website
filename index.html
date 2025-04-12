@@ -1,10 +1,15 @@
-=<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>秒寻-AI驱动的工业元器件选型助手</title>
+
+<!-- 首先在页面头部引入Chart.js库 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
   <style>
     :root {
       --primary: #2563eb;
@@ -376,7 +381,444 @@
 
 
 
-  </style>
+
+
+
+
+
+
+/* 约束条件查询交互样式 */
+.left-side {
+  flex: 1; 
+  background-color: white; 
+  border-radius: 8px; 
+  padding: 1.5rem; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+  display: flex; 
+  flex-direction: column;
+}
+
+.right-side {
+  flex: 2.5; 
+  background-color: white; 
+  border-radius: 8px; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+  display: flex; 
+  flex-direction: column; 
+  height: 100%;
+}
+
+.message-container {
+  flex-grow: 1; 
+  overflow-y: auto; 
+  margin-bottom: 1rem;
+}
+
+.results-header {
+  padding: 0.8rem 1.2rem; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table-header {
+  display: grid; 
+  grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; 
+  background-color: #f8fafc; 
+  padding: 0.8rem 1.2rem; 
+  font-weight: 500; 
+  color: #000000; 
+  border-bottom: 1px solid #e2e8f0; 
+  font-size: 12px;
+}
+
+.table-body {
+  flex-grow: 1; 
+  overflow-y: auto; 
+  font-size: 12px; 
+  max-height: calc(100% - 80px);
+}
+
+.table-row {
+  display: grid; 
+  grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; 
+  padding: 1rem 1.2rem; 
+  border-bottom: 1px solid #e2e8f0; 
+  align-items: center;
+  transition: background-color 0.2s ease, border-left 0.2s ease;
+  cursor: pointer;
+}
+
+.table-row:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.table-row:hover {
+  background-color: #f0f9ff;
+}
+
+.table-row.selected {
+  border-left: 3px solid #2563eb;
+  background-color: #f0f7ff;
+}
+
+.chat-input-container {
+  display: flex;
+  margin-top: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.chat-input {
+  flex-grow: 1;
+  padding: 0.8rem 1rem;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.send-button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-button:hover {
+  background-color: #1d4ed8;
+}
+
+.user-message {
+  display: flex;
+  margin-bottom: 1rem;
+  justify-content: flex-end;
+}
+
+.user-message-content {
+  background-color: #eef2ff;
+  padding: 1rem;
+  border-radius: 8px;
+  max-width: 80%;
+}
+
+.ai-message {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.ai-message-content {
+  background-color: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0.8rem;
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.ai-avatar {
+  background-color: #2563eb;
+  color: white;
+}
+
+.typing-indicator {
+  display: flex;
+  margin-top: 8px;
+}
+
+.typing-dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  background-color: #2563eb;
+  margin-right: 4px;
+  animation: pulse 1s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+  margin-right: 0;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.control-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.compare-button {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.compare-button:hover {
+  background-color: #e2e8f0;
+}
+
+.chat-button {
+  background-color: #2563eb;
+  color: white;
+}
+
+.chat-button:hover {
+  background-color: #1d4ed8;
+}
+
+.result-count {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tag-blue {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.tag-green {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.score-high {
+  color: #15803d;
+  font-weight: 500;
+}
+
+.score-medium {
+  color: #b45309;
+  font-weight: 500;
+}
+
+.score-low {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-header:hover {
+  background-color: #e2e8f0;
+}
+
+.sort-indicator {
+  margin-left: 4px;
+  font-size: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 雷达图样式增强 -->
+<style>
+#radarChartContainer {
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+#radarChartContainer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+#radarChart {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 图表图例样式优化 */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+/* 添加图表标题样式 */
+.chart-title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #334155;
+}
+
+/* 图表交互提示 */
+.chart-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 回形针按钮悬停效果 */
+button[onclick="document.getElementById('fileUpload').click();"]:hover {
+  color: #2563eb;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 功能演示选项卡 -->
+
+  .feature-content-panel {
+    display: none;
+  }
+  
+  .feature-content-panel.active {
+    display: block;
+  }
+  
+  .feature-tab {
+    transition: all 0.3s ease;
+  }
+  
+  .feature-tab:hover {
+    opacity: 0.9;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</style>
+
+
+
+
+
+
 </head>
 
 <body>
@@ -1587,401 +2029,54 @@
 
 
 
-<!-- 功能演示区域 -->
-<div id="features-demo" class="section-container">
-   <h2 class="section-title">功能演示</h2>
-   <!-- 功能选项卡 -->
-   <div class="feature-tabs">
 
 
 
-<!-- 功能切换选项卡 -->
-
-
-<div style="display: flex; margin-bottom: 1.5rem; background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
-  <button class="demo-tab active" data-tab="constraint-query" style="flex: 1; padding: 1rem; background-color: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">约束条件查询</button>
-  <button class="demo-tab" data-tab="exact-model" style="flex: 1; padding: 1rem; background-color: white; color: var(--primary); border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">精确型号查询</button>
-  <button class="demo-tab" data-tab="model-comparison" style="flex: 1; padding: 1rem; background-color: white; color: var(--primary); border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">多型号比较</button>
-  <button class="demo-tab" data-tab="one-click-consult" style="flex: 1; padding: 1rem; background-color: white; color: var(--primary); border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">一键咨询</button>
-  <button class="demo-tab" data-tab="bom-upload" style="flex: 1; padding: 1rem; background-color: white; color: var(--primary); border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">BOM上传</button>
-</div>
-
- </div>
-
-
-<!-- 功能内容区域 -->
-
-<div class="feature-content">
-
-
-<!-- 约束条件查询功能演示 -->
-
-
-<div id="constraint-query-content" class="demo-content" style="display: block;">
 
 
 
-<div id="core-features" style="background-color: #f0f7ff; border-radius: 12px; padding: 2rem; margin: 3rem 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-    
 
 
 
-<div style="display: flex; align-items: center; gap: 1rem;">
-      <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;">约束条件查询</h2>
-      <span style="color: #666; font-size: 1rem;">伺服电机示例</span>
-    </div>
 
 
 
-    <div style="display: flex; gap: 0.8rem;">
-      <button style="background-color: #2563eb; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
-        </svg>
-        比较
-      </button>
-      <button style="background-color: #2563eb; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-        聊天
-      </button>
-      <button style="background-color: white; color: #2563eb; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-          <polyline points="16 6 12 2 8 6"></polyline>
-          <line x1="12" y1="2" x2="12" y2="15"></line>
-        </svg>
-        分享
-      </button>
-      <button style="background-color: white; color: #2563eb; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        下载
-      </button>
-    </div>
-  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
-  <div style="display: flex; gap: 2rem; height: 600px;">
-    <!-- 左侧查询和历史区域 -->
-    <div style="flex: 1; background-color: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
-      <!-- 对话内容 -->
-      <div style="flex-grow: 1; overflow-y: auto; margin-bottom: 1rem;">
-        <!-- 用户初始消息 -->
-        <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
-          <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
-            <p style="margin: 0;">我需要查找一款适合高精度定位控制系统的伺服电机，大约2kW功率左右，转速要达到3000rpm，您能帮我找到合适的产品吗？</p>
-          </div>
-          <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-        </div>
-
-        <!-- AI回复询问更多细节 -->
-        <div style="display: flex; margin-bottom: 1rem;">
-          <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
-              <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
-              <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
-              <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
-            </svg>
-          </div>
-          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-            <p style="margin-top: 0; margin-bottom: 0.5rem;">我可以帮您查找合适的伺服电机。为了提供更准确的结果，请问：</p>
-            <ul style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
-              <li>您对电机扭矩有具体要求吗？根据功率和转速计算，约需6.4Nm左右</li>
-              <li>需要特定的通信协议吗？例如EtherCAT、PROFINET等</li>
-              <li>对电机的反馈精度有特殊要求吗？</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- 用户回复更多细节 -->
-        <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
-          <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
-            <p style="margin: 0;">扭矩需求是6.37Nm左右，通信协议必须支持EtherCAT，这是为了配合现有的控制系统。因为是用于高精度定位控制，所以精度越高越好。</p>
-          </div>
-          <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-        </div>
-
-        <!-- AI确认条件 -->
-        <div style="display: flex; margin-bottom: 1rem;">
-          <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
-              <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
-              <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
-              <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
-            </svg>
-          </div>
-          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-            <p style="margin-top: 0; margin-bottom: 0.5rem;">我将基于您提供的约束条件查找合适的伺服电机产品：</p>
-            <ul style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
-              <li>额定功率: 2kW</li>
-              <li>额定转速: 3000rpm</li>
-              <li>额定扭矩: 6.37Nm</li>
-              <li>通信协议: EtherCAT</li>
-              <li>应用场景: 高精度定位控制系统</li>
-            </ul>
-            <p style="margin-bottom: 0;">我是否理解正确？如需调整，请直接修改条件。</p>
-          </div>
-        </div>
-        
-        <!-- 用户消息 -->
-        <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
-          <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
-            <p style="margin: 0;">是的，条件正确，请帮我查找合适的产品。我希望电机的精度越高越好。</p>
-          </div>
-          <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-        </div>
-        
-        <!-- AI回复查询结果 -->
-        <div style="display: flex; margin-bottom: 1rem;">
-          <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
-              <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
-              <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
-              <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
-            </svg>
-          </div>
-          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-            <p style="margin-top: 0; margin-bottom: 0.5rem;">我已为您找到符合条件的高精度伺服电机型号。您可以在右侧查看详细比较表格。</p>        
-          </div>
-        </div>
-      </div>
-      
-      <!-- 消息输入框 -->
-      <div style="display: flex; align-items: center; margin-top: 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-        <input type="text" placeholder="输入更多需求或问题..." style="flex-grow: 1; padding: 0.8rem 1rem; border: none; outline: none;">
-        <button style="background-color: #2563eb; color: white; border: none; padding: 2.8rem 1.2rem; display: flex; align-items: center; cursor: pointer;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- 右侧结果展示区域 -->
-    <div style="flex: 2.5; background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 100%;">
-      <div style="padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0;">
-        <div>10 产品已找到</div>
-        <div>
-          <button style="background-color: transparent; border: none; padding: 0.4rem; cursor: pointer;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 5v14M5 12h14"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-      
-      <!-- 表格头部 - 固定在顶部 -->
-<div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; background-color: #f8fafc; padding: 0.8rem 1.2rem; font-weight: 500; color: #000000; border-bottom: 1px solid #e2e8f0; font-size: 12px;">
-  <div style="display: flex; justify-content: center; align-items: center;">
-    <input type="checkbox" style="width: 16px; height: 16px;">
-  </div>
-  <div style="text-align: left;">型号</div>
-  <div style="text-align: center;">评级</div>
-  <div style="text-align: center;">打分</div>
-  <div style="text-align: left;">描述</div>
-  <div style="text-align: left;">制造商</div>
-</div>
-
-<!-- 表格内容区域 - 可滚动 -->
-<div style="flex-grow: 1; overflow-y: auto; font-size: 12px; max-height: calc(100% - 80px);">
-  <!-- 表格行 - 第一行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">MR-J5-20G</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">替换 DROP IN</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.98</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.0kW AC伺服电机，23bit高精度编码器，支持EtherCAT通信，额定扭矩6.7Nm，最高转速3000rpm</div>
-    <div style="text-align: left;">三菱电机</div>
-  </div>
-
-  <!-- 表格行 - 第二行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">R88M-1M20030H-S2</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">形配 FORM&FIT</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.95</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.0kW伺服电机，20bit高分辨率编码器，支持EtherCAT协议，额定扭矩6.37Nm，适用于精密定位控制</div>
-    <div style="text-align: left;">欧姆龙</div>
-  </div>
-
-  <!-- 表格行 - 第三行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">SBM-02VBD1-E</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.87</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.0kW伺服电机，支持EtherCAT通信协议，额定扭矩6.4Nm，最高转速3000rpm，适合高精度定位系统</div>
-    <div style="text-align: left;">安川电机</div>
-  </div>
-
-  <!-- 表格行 - 第四行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">AKM22G-ACCNC-02</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.80</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.0kW高性能伺服电机，24bit高精度编码器，支持EtherCAT总线，额定扭矩6.6Nm，定位精度±0.001°</div>
-    <div style="text-align: left;">科尔摩根</div>
-  </div>
-
-  <!-- 表格行 - 第五行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">MS2N07-XXXXX</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.73</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.1kW同步伺服电机，支持EtherCAT总线通信，额定扭矩6.7Nm，转速范围0-3000rpm</div>
-    <div style="text-align: left;">博世力士乐</div>
-  </div>
-
-  <!-- 表格行 - 第六行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">SGM7G-20A</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.71</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.0kW伺服电机，23bit高分辨率编码器，支持EtherCAT通信，额定扭矩6.37Nm，最高转速2000rpm</div>
-    <div style="text-align: left;">安川电机</div>
-  </div>
-
-  <!-- 表格行 - 第七行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">1FK7063-5AF71</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.69</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.0kW伺服电机，支持PROFINET总线通信，额定扭矩6.4Nm，转速范围0-3000rpm，适合精密运动控制</div>
-    <div style="text-align: left;">西门子</div>
-  </div>
-
-  <!-- 表格行 - 第八行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">MHMD022G1U</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.68</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.0kW伺服电机，20bit增量式编码器，支持EtherCAT，额定扭矩6.5Nm，最高转速3000rpm</div>
-    <div style="text-align: left;">松下电器</div>
-  </div>
-
-  <!-- 表格行 - 第九行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">CMP80S/BP/KY/AZ</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.65</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.2kW永磁同步伺服电机，支持多种总线协议，额定扭矩6.8Nm，转速范围0-3500rpm</div>
-    <div style="text-align: left;">SEW</div>
-  </div>
-
-  <!-- 表格行 - 第十行 -->
-  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb;">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <input type="checkbox" style="width: 16px; height: 16px;">
-    </div>
-    <div style="text-align: left; font-weight: 500; color: #000000;">AKMH-22C-ABC-2E</div>
-    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
-    <div style="text-align: center;">
-      <div style="display: flex; align-items: center; justify-content: center;">
-        <span style="font-weight: 600; color: #000000;">0.62</span>
-      </div>
-    </div>
-    <div style="text-align: left;">2.0kW食品级伺服电机，IP67防护等级，支持EtherCAT通信，额定扭矩6.5Nm，可用于高卫生要求场合</div>
-    <div style="text-align: left;">科尔摩根</div>
-  </div>
-</div>
-</div>
-
-
-
-
-
-
-
-
-</div>
-</div>
+  
 
 
 
@@ -1993,7 +2088,16 @@
 
 
 
-<!-- 精确型号查询功能演示 -->
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2012,492 +2116,848 @@
 
 
    
-<!-- 商业模式画布 -->
-<div id="business-model" style="background-color: white; border-radius: var(--border-radius); padding: 2rem; margin: 3rem 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
-  <h2 style="text-align: center; margin-bottom: 1rem;">商业模式</h2>
-  <p style="text-align: center; margin-bottom: 2.5rem; font-size: 1rem;">Find in Seconds, Decide in Minutes, Order in Hours, Delivery in Days</p>
-
-  <div style="display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, minmax(250px, auto)); gap: 1.5rem; margin-bottom: 2rem;">
-    <!-- 第一行 -->
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">关键合作伙伴</h3>
-      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-        <li style="margin-bottom: 1rem; line-height: 1.4;">系统集成商</li>
-        <li style="margin-bottom: 1rem; line-height: 1.4;">区域代理商/独立分销商</li>        
-        <li style="line-height: 1.4;">元器件原厂制造商</li>
-      </ul>
-    </div>
-
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">关键活动</h3>
-      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-        <li style="margin-bottom: 1rem; line-height: 1.4;">元器件数据采集与结构化</li>
-        <li style="margin-bottom: 1rem; line-height: 1.4;">AI选型与推荐算法开发</li>
-        <li style="margin-bottom: 1rem; line-height: 1.4;">跨角色协作流程优化</li>
-        <li style="line-height: 1.4;">用户及数据生态飞轮构建</li>
-      </ul>
-    </div>
-
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">价值主张</h3>
-      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>精准快速选型-Find in Seconds：</strong>通过AI引导式的"搜-筛-比"流程，将选型效率提升80%</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>数据智能分析-Decide in Minutes：</strong>基于性能、交期、成本多维度的选型决策支持</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>跨角色协同-Order in Hours：</strong>打通工程师、采购与销售信息壁垒，缩短70%沟通时间</li>
-        <li style="line-height: 1.4;"><strong>标准化交付-Deliver in Days：</strong>规范化BOM、询价、订单及交付流程</li>
-      </ul>
-    </div>
-
-    <!-- 第二行 -->
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">关键资源-ABCDE</h3>
-      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;">领域化AI选型模型-<strong>A</strong>lgorithm</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;">供应链数据整合能力-<strong>B</strong>ig Data</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;">协作平台技术-<strong>C</strong>ollaborative Platform</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;">结构化元器件知识图谱-<strong>D</strong>omain Knowledge</li>
-        <li style="line-height: 1.4;">生态系统网络-<strong>E</strong>cosystem Network</li>
-      </ul>
-    </div>
-
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">客户关系</h3>
-      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-        <li style="margin-bottom: 2rem; line-height: 1.5;"><strong>STEP 1: AI Copilot</strong><br>AI辅助自助服务</li>
-        <li style="line-height: 1.5;"><strong>STEP 2: AI Agent</strong><br>一键采销咨询对接，从订单到交付</li>
-      </ul>
-    </div>
-
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">客户细分</h3>
-      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>设计工程师：</strong>需要高效选型、参数比较与技术咨询</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>采购工程师：</strong>需要供应商筛选、询价比价与订单管理</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;"><strong>销售工程师：</strong>需要产品推广、客户触达与市场洞察</li>        
-        <li style="line-height: 1.4;"><strong>客户服务：</strong>需要咨询响应，销售转化与订单跟踪</li>
-      </ul>
-    </div>
-
-    <!-- 第三行 -->
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">成本结构</h3>
-      <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-        <h4 style="font-size: 1rem; margin: 0 0 0.75rem 0; color: #4a5568;">研发与运营成本</h4>
-        <ul style="padding-left: 1.25rem; margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.4;">
-          <li style="margin-bottom: 0.5rem;">数据采集与处理</li>          
-          <li style="margin-bottom: 0.5rem;">AI模型开发与优化</li>
-          <li style="margin-bottom: 0.5rem;">SaaS云平台开发与维护</li>  
-        </ul>
-        <h4 style="font-size: 1rem; margin: 0.75rem 0; color: #4a5568;">增长成本</h4>
-        <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; line-height: 1.4;">
-          <li style="margin-bottom: 0.5rem;">用户获取</li>
-          <li style="margin-bottom: 0.5rem;">客户获取</li>
-          <li>合作伙伴生态拓展</li>
-        </ul>
-      </div>
-    </div>
-
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">渠道</h3>
-      <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.95rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;">SaaS云平台</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;">移动应用与微信小程序</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;">系统集成API</li>
-        <li style="margin-bottom: 0.75rem; line-height: 1.4;">行业展会与技术研讨会</li>
-        <li style="line-height: 1.4;">合作伙伴渠道</li>
-      </ul>
-    </div>
-
-    <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; display: flex; flex-direction: column;">
-      <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem; text-align: center;">收入来源</h3>
-      <div style="flex-grow: 1;">
-        <h4 style="font-size: 1rem; margin: 0 0 0.75rem 0; color: #4a5568; text-align: center;">增长策略与收入阶段</h4>
-        <ul style="padding-left: 1.25rem; margin: 0; font-size: 0.9rem; list-style: none;">
-          <li style="margin-bottom: 0.6rem; background-color: #e6f7ff; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
-            <strong>STEP 1. 用户积累阶段</strong>：设计工程师免费使用平台全部功能，提升选型效率，降低技术筛选时间80%。目标首年积累10,000名活跃用户。
-          </li>
-          <li style="margin-bottom: 0.6rem; background-color: #e6fff0; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
-            <strong>STEP 2. 销售端变现阶段</strong>：代理商/分销商付费使用平台，每月99-499元不等。提供一键咨询功能连接设计师，获取销售线索。
-          </li>
-          <li style="margin-bottom: 0.6rem; background-color: #f0e6ff; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
-            <strong>STEP 3. 企业服务扩展阶段</strong>：面向系统集成商推出团队版服务，按席位收费（每席位每月199-399元），提升工程效率50%以上。
-          </li>
-          <li style="margin-bottom: 0.6rem; background-color: #fffde6; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
-            <strong>STEP 4. 采购端引入阶段</strong>：吸引采购人员使用平台进行多维比较和供应商评估，降低采购成本8-15%。高级分析功能付费。
-          </li>
-          <li style="background-color: #fff0e6; padding: 0.5rem; border-radius: 4px; line-height: 1.4;">
-            <strong>STEP 5. 全面商业化阶段</strong>：建立双向收费模式 - 销售端按成交金额收取交易佣金，采购端企业版按年收取SaaS使用费。
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid #e2e8f0; margin-top: 1.5rem;">
-    <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center;">商业优势</h3>
-    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between;">
-      <div style="flex: 1; min-width: 250px;">
-        <div style="font-weight: 600; margin-bottom: 0.75rem; text-align: center;">数据网络效应</div>
-        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; text-align: center;">用户越多，数据越丰富，AI选型精度越高，吸引更多用户加入形成正反馈循环</p>
-      </div>
-      <div style="flex: 1; min-width: 250px;">
-        <div style="font-weight: 600; margin-bottom: 0.75rem; text-align: center;">多边平台价值</div>
-        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; text-align: center;">通过打通工程师、采购与销售信息孤岛，解决工业元器件选型中的信息不对称问题</p>
-      </div>
-      <div style="flex: 1; min-width: 250px;">
-        <div style="font-weight: 600; margin-bottom: 0.75rem; text-align: center;">规模化扩展能力</div>
-        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5; text-align: center;">AI架构支持横向扩展至更多产品线，纵向整合至供应链更多环节，实现指数级增长</p>
-      </div>
-    </div>
-  </div>
-</div>      
-
-
-
-
-
-
-
-
-<!-- 项目计划 -->
-<div id="project-plan" style="background-color: white; border-radius: var(--border-radius); padding: 2rem; margin: 3rem 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
-  <h2 style="text-align: center; margin-bottom: 1.5rem;">项目计划</h2>
-
-  <!-- 项目概述 -->
-  <div style="margin-bottom: 1.5rem; background-color: #f8fafc; padding: 1.25rem; border-radius: var(--border-radius);">
-    <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">1. 项目概述</h3>
-    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-      <div style="flex: 1; min-width: 300px;">
-        <div style="font-weight: 600; margin-bottom: 0.5rem;">项目目标：</div>
-        <p style="margin: 0;">开发"秒寻"平台，实现工业元器件的智能搜索、筛选、比较、推荐和咨询一体化服务。</p>
-      </div>
-      <div style="flex: 1; min-width: 300px;">
-        <div style="font-weight: 600; margin-bottom: 0.5rem;">预期成效：</div>
-        <ul style="padding-left: 1.25rem; margin: 0;">
-          <li style="margin-bottom: 0.25rem;">设计工程师选型效率提升60%</li>
-          <li style="margin-bottom: 0.25rem;">销售工程师响应时间减少70%</li>
-          <li style="margin-bottom: 0.25rem;">采购周期缩短25%</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- 项目阶段与任务分解 -->
-  <div style="margin-bottom: 1.5rem;">
-    <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">2. 项目阶段与任务分解</h3>
-
-    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-      <!-- 阶段一 -->
-      <div style="flex: 1; min-width: 300px; background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
-        <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-          <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
-          <span>数据采集与处理（2个月）</span>
-        </div>
-        <ul style="padding-left: 2rem; margin: 0.5rem 0;">
-          <li style="margin-bottom: 0.25rem;">爬虫50+以上主流品牌元器件数据: 优先品类排序"型号多，维度多，长尾多“：传感器（温度，油压），伺服电机，气缸，机器人</li>
-          <li style="margin-bottom: 0.25rem;">建立数据模型：参数提取、分类与映射</li>
-        </ul>
-      </div>
-
-      <!-- 阶段二 -->
-      <div style="flex: 1; min-width: 300px; background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
-        <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-          <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
-          <span>核心功能开发（1个月）</span>
-        </div>
-        <ul style="padding-left: 2rem; margin: 0.5rem 0;">
-          <li style="margin-bottom: 0.25rem;"><Strong>A. 实现"约束条件查询-查推荐"</Strong>（"Check"和"Compare"功能模块），输入方式：通过关键词描述，输出形式：以表格形式展示（含型号类别、评级、匹配分数、描述、制造商等信息）</li>          
-	  <li style="margin-bottom: 0.25rem;"><Strong>B. 实现"精确型号查询-查平替"</Strong>（"Check"和"Compare"功能模块），输入方式：通过型号，输出形式：以表格形式展示结果（含型号类别、评级、匹配分数、描述、制造商等信息）（客户行为关注价格，后续必须增加渠道的价格，交期，库存信息）</li>          
-	  <li style="margin-bottom: 0.25rem;"><Strong>C. 实现"多型号间比较-查优劣"</Strong>（"Check"和"Compare"功能模块），输入方式：通过型号，输出形式：以表格形式+彩色标记差异+优缺点文本摘要</li>
-	  <li style="margin-bottom: 0.25rem;"><Strong>D. 实现"精确型号查询-查数据"</Strong>，输入方式：通过型号，输出形式：带引用来源的文本</li>
-	  
-	  <li style="margin-bottom: 0.25rem;"><Strong>E. 实现"一键咨询"-转人工</Strong>（”Chat“功能模块），输入方式：系统自动汇总用户查询对话历史，帮助销售理解需求，输出形式：实时聊天界面，显示历史查询摘要和需求分析（Winne备注：1. 销售要触达潜在客户群体，还要锁定其中的keyman 2. 销售人员需要深入了解客户需求和痛点，才能提供满足客户期待的解决方案，从而提高成交率) (用户触达-AI需求分析-AI方案推荐-AI用户画像分析“算法”-AI用户成交概率分析“算法”-销售跟单-订单成交)</li>
-
-<li style="margin-bottom: 0.25rem;"><Strong>F. 实现"BOM一键上传-查平替"批量处理</Strong>（"Check"和"Compare"功能模块），输入方式：上传BOM文件（.xlsx、.csv、.txt），输出形式：以表格形式展示全部替代方案</li>
-	  
-        </ul>
-      </div>
-    </div>
-
-    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-      <!-- 阶段三 -->
-      <div style="flex: 1; min-width: 300px; background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
-        <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-          <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
-          <span>用户侧应用开发（2个月）</span>
-        </div>
-        <ul style="padding-left: 2rem; margin: 0.5rem 0;">
-	<li style="margin-bottom: 0.25rem;">Web端，手机端应用开发</li>          
-	<li style="margin-bottom: 0.25rem;">优化工程师"搜-筛-比"模块算法</li>
-        </ul>
-      </div>
-
-      <!-- 阶段四 -->
-      <div style="flex: 1; min-width: 300px; background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius); margin-bottom: 0.5rem;">
-        <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-          <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">4</div>
-          <span>测试与优化（2个月）</span>
-        </div>
-        <ul style="padding-left: 2rem; margin: 0.5rem 0;">
-          <li style="margin-bottom: 0.25rem;">100个用户测试各角色功能模块</li>
-          <li style="margin-bottom: 0.25rem;">调优搜索精准度与推荐算法</li>
-          <li style="margin-bottom: 0.25rem;">优化用户体验</li>
-          <li>系统性能测试与稳定性提升</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 阶段五 -->
-    <div style="background-color: #f8fafc; padding: 1rem; border-radius: var(--border-radius);">
-      <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-        <div style="width: 24px; height: 24px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">5</div>
-        <span>商业化与市场推广（2个月）</span>
-      </div>
-      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-        <div style="flex: 1; min-width: 250px;">
-          <ul style="padding-left: 2rem; margin: 0.5rem 0;">
-            <li style="margin-bottom: 0.25rem;">确定10家天使客户，制定合作策略</li>
-            <li>开发行业标杆案例</li>
-          </ul>
-        </div>
-        <div style="flex: 1; min-width: 250px;">
-          <ul style="padding-left: 2rem; margin: 0.5rem 0;">
-            <li style="margin-bottom: 0.25rem;">设计服务方案与定价模型</li>
-            <li>建立数据供应商合作</li>
-          </ul>
-        </div>
-        <div style="flex: 1; min-width: 250px;">
-          <ul style="padding-left: 2rem; margin: 0.5rem 0;">
-            <li style="margin-bottom: 0.25rem;">上线商业版本</li>
-            <li>建立迭代与反馈机制</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 重点与优先级 -->
-  <div style="margin-bottom: 2rem;">
-    <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0;">3. 重点与优先级</h3>
-
-    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
-      <!-- 数据策略 -->
-      <div style="flex: 1; min-width: 300px;">
-        <div style="font-weight: 600; margin-bottom: 0.75rem;">数据策略</div>
-        <ul style="padding-left: 1.5rem; margin: 0;">
-          <li style="margin-bottom: 0.25rem;">高质量元器件技术参数是核心，建立完整的初始化数据集以及数据集持续更新</li>
-          <li>优先覆盖工业自动化核心元器件，国内外主流品牌，本土平替品牌</li>
-        </ul>
-      </div>
-
-      <!-- 功能优先级 -->
-      <div style="flex: 1; min-width: 300px;">
-        <div style="font-weight: 600; margin-bottom: 0.75rem;">功能优先级</div>
-        <ol style="padding-left: 1.5rem; margin: 0;">
-	<li style="margin-bottom: 0.25rem;"><strong>约束条件查询-查推荐</strong> - 基于技术要求的型号推荐，按匹配度排列 （a. 根据我给的工况和约束条件，按性能参数匹配度列出可选型号)</li>          
-	<li style="margin-bottom: 0.25rem;"><strong>精确型号查询-查平替</strong></li>
-	<li style="margin-bottom: 0.25rem;"><strong>多型号间比较-查优劣</strong> - 详细比较不同元器件配置、机械电气参数 (a. 帮我比较这三个型号的性能参数，标记差异点，总结优劣势，b. 根据我的技术要求和约束情况，做匹配度分析和总结</li>
-	<li style="margin-bottom: 0.25rem;"><strong>精确型号查询-查数据</strong> - 查找已知型号详细参数，支持与数万个元器件数据表进行对话查询 （a. 帮我列出这个型号的全部性能参数，b. 帮我查询某一个具体性能参数）</li>
- <li style="margin-bottom: 0.25rem;"><strong>一键咨询-转人工</strong></li> 
-	  <li style="margin-bottom: 0.25rem;"><strong>BOM一键上传-查平替</strong></li>
-	  <li style="margin-bottom: 0.25rem;"><strong>多维度比较（待定，用户认为这个功能非常重要，因为要找平替，降低成本）</strong> - 性能、交期、成本多维对比</li>
-        </ol>
-      </div>
-
-      <!-- 角色优先级 -->
-      <div style="flex: 1; min-width: 300px;">
-        <div style="font-weight: 600; margin-bottom: 0.75rem;">角色优先级</div>
-        <ol style="padding-left: 1.5rem; margin: 0;">
-          <li style="margin-bottom: 0.25rem;">设计工程师 - 选型决策核心用户</li>
-          <li style="margin-bottom: 0.25rem;">销售工程师 - 技术支持与咨询响应</li>
-          <li>采购工程师 - 比价询价与订单管理</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-
-  <!-- 项目时间线 -->
-<div style="margin-bottom: 2rem;">
-  <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e2e8f0;">4. 项目时间线</h3>
-
-  <div style="background-color: #f8fafc; padding: 1.5rem; border-radius: var(--border-radius);">
-    <!-- 月份标记 -->
-    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 1</div>
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 2</div>
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 3</div>
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 4</div>
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 5</div>
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 6</div>
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 7</div>
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 8</div>
-      <div style="text-align: center; font-weight: 500; font-size: 0.9rem;">月份 9</div>
-    </div>
-
-    <!-- 进度条 -->
-    <div style="width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px; margin-bottom: 1.5rem; display: flex;">
-      <div style="width: 22%; height: 100%; background-color: var(--primary); border-radius: 4px 0 0 4px;"></div>
-      <div style="width: 11%; height: 100%; background-color: var(--primary); opacity: 0.8;"></div>
-      <div style="width: 22%; height: 100%; background-color: var(--primary); opacity: 0.6;"></div>
-      <div style="width: 22%; height: 100%; background-color: var(--primary); opacity: 0.4;"></div>
-      <div style="width: 23%; height: 100%; background-color: var(--primary); opacity: 0.2; border-radius: 0 4px 4px 0;"></div>
-    </div>
-
-    <!-- 项目阶段标记 -->
-    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
-        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">数据采集与处理</div>
-        <div style="font-size: 0.8rem;">月份 1-2</div>
-      </div>
-
-      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
-        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">核心功能开发</div>
-        <div style="font-size: 0.8rem;">月份 3</div>
-      </div>
-
-      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
-        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">用户侧应用开发</div>
-        <div style="font-size: 0.8rem;">月份 4-5</div>
-      </div>
-
-      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
-        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">测试与优化</div>
-        <div style="font-size: 0.8rem;">月份 6-7</div>
-      </div>
-
-      <div style="flex: 1; min-width: 120px; padding: 0.5rem; background-color: rgba(var(--primary-rgb), 0.1); border-radius: 4px; text-align: center;">
-        <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">商业化与市场推广</div>
-        <div style="font-size: 0.8rem;">月份 8-9</div>
-      </div>
-    </div>
-
-    <!-- 关键里程碑 -->
-    <div style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-      <div style="font-weight: 600; margin-bottom: 0.75rem; font-size: 0.95rem;">关键里程碑:</div>
-      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem;">
-        <div style="flex: 1; min-width: 200px;">
-          <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
-            <div>爬虫完成50+品牌数据 (月份1)</div>
-          </div>
-          <div style="display: flex; align-items: center;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
-            <div>数据模型建立完成 (月份2)</div>
-          </div>
-        </div>
-
-        <div style="flex: 1; min-width: 200px;">
-          <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
-            <div>核心功能模块完成 (月份3)</div>
-          </div>
-          <div style="display: flex; align-items: center;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
-            <div>Web端和移动端应用开发完成 (月份5)</div>
-          </div>
-        </div>
-
-        <div style="flex: 1; min-width: 200px;">
-          <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
-            <div>100个用户测试完成 (月份7)</div>
-          </div>
-          <div style="display: flex; align-items: center;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--primary); margin-right: 0.5rem;"></div>
-            <div>商业版本上线 (月份9)</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-    
               
 
 
 
-  <script>
-    // 角色切换
-    document.querySelectorAll('.role-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        // 移除所有活动状态
-        document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.role-content').forEach(c => c.classList.remove('active'));
-        // 设置当前活动状态
-        tab.classList.add('active');
-        const role = tab.getAttribute('data-role');
-        document.getElementById(role).classList.add('active');
-      });
+
+
+
+
+
+
+
+
+
+<!--------JS交互部分内容------->
+
+<script>
+  // 角色切换
+  document.querySelectorAll('.role-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      // 移除所有活动状态
+      document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.role-content').forEach(c => c.classList.remove('active'));
+      // 设置当前活动状态
+      tab.classList.add('active');
+      const role = tab.getAttribute('data-role');
+      document.getElementById(role).classList.add('active');
     });
-    // 旅程阶段切换
-    document.querySelectorAll('.stage').forEach(stage => {
-      stage.addEventListener('click', () => {
-        const parent = stage.closest('.journey-map');
-        const parentContent = parent.closest('.role-content');
-        // 移除父容器内的所有活动状态
-        parent.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
-        parentContent.querySelectorAll('.stage-details').forEach(d => d.classList.remove('active'));
-        // 设置当前活动状态
-        stage.classList.add('active');
-        const stageId = stage.getAttribute('data-stage');
-        const detailsElement = parentContent.querySelector(`#${stageId}-details`);
-        if (detailsElement) {
-          detailsElement.classList.add('active');
-        }
-      });
-    });
-
-
-
-
-
-
-  // 将此代码放在HTML底部
-  document.addEventListener('DOMContentLoaded', function() {
-    // 初始化 - 确保第一个选项卡是活跃的
-    const firstTab = document.querySelector('.demo-tab');
-    if(firstTab) {
-      firstTab.style.backgroundColor = 'var(--primary)';
-      firstTab.style.color = 'white';
-      const firstContentId = firstTab.dataset.tab + '-content';
-      const firstContent = document.getElementById(firstContentId);
-      if(firstContent) {
-        firstContent.style.display = 'block';
+  });
+  
+  // 旅程阶段切换
+  document.querySelectorAll('.stage').forEach(stage => {
+    stage.addEventListener('click', () => {
+      const parent = stage.closest('.journey-map');
+      const parentContent = parent.closest('.role-content');
+      // 移除父容器内的所有活动状态
+      parent.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+      parentContent.querySelectorAll('.stage-details').forEach(d => d.classList.remove('active'));
+      // 设置当前活动状态
+      stage.classList.add('active');
+      const stageId = stage.getAttribute('data-stage');
+      const detailsElement = parentContent.querySelector(`#${stageId}-details`);
+      if (detailsElement) {
+        detailsElement.classList.add('active');
       }
-    }
+    });
+  });
+</script>
 
-    // 点击处理
-    document.querySelectorAll('.demo-tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        console.log('Tab clicked:', this.dataset.tab); // 调试用
-        
-        // 清除所有活跃状态
-        document.querySelectorAll('.demo-tab').forEach(t => {
-          t.style.backgroundColor = 'white';
-          t.style.color = 'var(--primary)';
-        });
-        
-        // 设置当前活跃标签
-        this.style.backgroundColor = 'var(--primary)';
-        this.style.color = 'white';
-        
-        // 隐藏所有内容
-        document.querySelectorAll('.demo-content').forEach(content => {
-          content.style.display = 'none';
-        });
-        
-        // 显示对应内容
-        const targetContent = document.getElementById(this.dataset.tab + '-content');
-        console.log('Target content:', targetContent); // 调试用
-        if (targetContent) {
-          targetContent.style.display = 'block';
-        }
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // 初始化功能演示选项卡
+  const firstTab = document.querySelector('.demo-tab');
+  if(firstTab) {
+    firstTab.classList.add('active');
+    const firstContentId = firstTab.dataset.tab + '-content';
+    const firstContent = document.getElementById(firstContentId);
+    if(firstContent) {
+      firstContent.style.display = 'block';
+    }
+  }
+
+  // 功能演示选项卡切换
+  document.querySelectorAll('.demo-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.demo-tab').forEach(t => {
+        t.classList.remove('active');
+        t.style.backgroundColor = 'white';
+        t.style.color = 'var(--primary)';
       });
+      
+      this.classList.add('active');
+      this.style.backgroundColor = 'var(--primary)';
+      this.style.color = 'white';
+      
+      document.querySelectorAll('.demo-content').forEach(content => {
+        content.style.display = 'none';
+      });
+      
+      const targetContent = document.getElementById(this.dataset.tab + '-content');
+      if (targetContent) {
+        targetContent.style.display = 'block';
+      }
     });
   });
 
+  // 约束条件查询交互功能
+  setupConstraintQueryInteraction();
+});
+
+// 约束条件查询交互功能设置
+function setupConstraintQueryInteraction() {
+  const constraintQuerySection = document.getElementById('constraint-query-content');
+  if (!constraintQuerySection) return;
+
+  
+  // 获取具体的比较和咨询按钮 - 使用更精确的选择器
+  const buttonContainer = constraintQuerySection.querySelector('#core-features > div > div:last-child');
+  if (!buttonContainer) return;
+
+  const compareButton = buttonContainer.querySelector('button:nth-child(1)');
+  const chatButton = buttonContainer.querySelector('button:nth-child(2)');
+  
+  // 获取消息容器
+  const messagesContainer = constraintQuerySection.querySelector('#core-features > div:nth-child(2) > div:first-child > div:first-child');
+  
+  // 获取消息输入框
+  const messageInput = constraintQuerySection.querySelector('input[type="text"]');
+  if (!messageInput) return;
+  
+
+
+ const sendButton = constraintQuerySection.querySelector('button[style*="background-color: #2563eb"][style*="padding: 0.8rem 1.2rem"]');
+
+  
+  // 获取复选框
+  const checkboxes = constraintQuerySection.querySelectorAll('input[type="checkbox"]');
+  
+  // 发送消息功能
+  function sendMessage() {
+    if (!messageInput.value.trim()) return;
+    
+    // 创建用户消息元素
+    const userMessageHTML = `
+      <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+        <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
+          <p style="margin: 0;">${messageInput.value}</p>
+        </div>
+        <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+      </div>
+    `;
+    
+    // 添加到消息容器
+    if (messagesContainer) {
+      messagesContainer.insertAdjacentHTML('beforeend', userMessageHTML);
+      
+      // 显示AI思考状态
+      const thinkingHTML = `
+        <div class="ai-thinking" style="display: flex; margin-bottom: 1rem;">
+          <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+              <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+              <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+              <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+            </svg>
+          </div>
+          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <p style="margin: 0;">正在思考...</p>
+            <div class="typing-indicator" style="display: flex; margin-top: 8px;">
+              <div style="height: 8px; width: 8px; border-radius: 50%; background-color: #2563eb; margin-right: 4px; animation: pulse 1s infinite;"></div>
+              <div style="height: 8px; width: 8px; border-radius: 50%; background-color: #2563eb; margin-right: 4px; animation: pulse 1s infinite 0.2s;"></div>
+              <div style="height: 8px; width: 8px; border-radius: 50%; background-color: #2563eb; animation: pulse 1s infinite 0.4s;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      messagesContainer.insertAdjacentHTML('beforeend', thinkingHTML);
+      
+      // 滚动到底部
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      // 模拟AI响应（1.5秒后）
+      setTimeout(() => {
+        // 移除思考状态
+        const thinkingElement = messagesContainer.querySelector('.ai-thinking');
+        if (thinkingElement) {
+          thinkingElement.remove();
+        }
+        
+        // 创建AI响应
+        const aiResponseHTML = `
+          <div style="display: flex; margin-bottom: 1rem;">
+            <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+                <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+                <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+                <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+              </svg>
+            </div>
+            <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+              <p style="margin-top: 0; margin-bottom: 0.5rem;">我已将您的新需求纳入考虑，并更新了结果列表。请查看右侧的匹配产品。</p>
+              <p style="margin-bottom: 0;">您还有其他要求或问题吗？</p>
+            </div>
+          </div>
+        `;
+        
+        messagesContainer.insertAdjacentHTML('beforeend', aiResponseHTML);
+        
+        // 滚动到底部
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // 清空输入框
+        messageInput.value = '';
+      }, 1500);
+    }
+  }
+  
+  // 添加发送消息事件监听器
+  if (sendButton) {
+    sendButton.addEventListener('click', sendMessage);
+  }
+  
+  if (messageInput) {
+    messageInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  }
+  
+  // 为复选框添加点击事件
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const row = this.closest('div[style*="display: grid"]');
+      if (row) {
+        if (this.checked) {
+          row.style.borderLeft = '3px solid #2563eb';
+          row.style.backgroundColor = '#f0f7ff';
+        } else {
+          row.style.borderLeft = '';
+          const isEvenRow = Array.from(row.parentNode.children).indexOf(row) % 2 === 1;
+          row.style.backgroundColor = isEvenRow ? '#f9fafb' : '';
+        }
+      }
+      
+      // 更新已选择数量
+      const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+      if (compareButton) {
+        compareButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          比较${selectedCount > 0 ? ` (${selectedCount})` : ''}
+        `;
+      }
+    });
+  });
+  
+  // 添加比较按钮功能
+  if (compareButton) {
+    compareButton.addEventListener('click', function() {
+      const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+      if (selectedCount < 2) {
+        alert('请至少选择2个产品进行比较');
+        return;
+      }
+      
+      // 获取选中型号
+      const selectedModels = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => {
+          const row = cb.closest('div[style*="display: grid"]');
+          return row ? row.querySelector('div:nth-child(2)').textContent : '';
+        })
+        .filter(Boolean);
+      
+      if (messagesContainer) {
+        const compareMessageHTML = `
+          <div style="display: flex; margin-bottom: 1rem;">
+            <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+                <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+                <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+                <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+              </svg>
+            </div>
+            <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+              <p style="margin-top: 0; margin-bottom: 0.5rem;">我已为您创建了比较视图，对比了以下型号:</p>
+              <p style="margin-bottom: 0.5rem; font-weight: 500;">${selectedModels.join(', ')}</p>
+              <p style="margin-bottom: 0;">以下是这些型号的主要参数对比，您可以清楚地看到它们在性能和功能上的差异。</p>
+              <div style="margin-top: 1rem; padding: 0.5rem; background-color: #edf2f7; border-radius: 4px;">
+                <div style="font-weight: 500; color: #2563eb; margin-bottom: 0.5rem;">推荐选择:</div>
+                <div>如果您注重性价比，推荐选择${selectedModels[0]}；如果您追求高性能，${selectedModels[selectedModels.length-1]}可能更适合您。</div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        messagesContainer.insertAdjacentHTML('beforeend', compareMessageHTML);
+        
+        // 滚动到底部
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+    });
+  }
+  
+  // 添加咨询按钮功能
+  if (chatButton) {
+    chatButton.addEventListener('click', function() {
+      const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+      if (selectedCount === 0) {
+        alert('请至少选择1个产品进行咨询');
+        return;
+      }
+      
+      // 获取选中型号
+      const selectedModels = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => {
+          const row = cb.closest('div[style*="display: grid"]');
+          return row ? row.querySelector('div:nth-child(2)').textContent : '';
+        })
+        .filter(Boolean);
+      
+      if (messagesContainer) {
+                // 显示系统消息：正在连接客服
+        const systemMessageHTML = `
+          <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+            <div style="background-color: #f1f5f9; padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.875rem; color: #64748b;">
+              正在连接客服，请稍候...
+            </div>
+          </div>
+        `;
+        
+        messagesContainer.insertAdjacentHTML('beforeend', systemMessageHTML);
+        
+        // 模拟客服响应（1秒后）
+        setTimeout(() => {
+          const customerServiceHTML = `
+            <div style="display: flex; margin-bottom: 1rem;">
+              <div style="width: 36px; height: 36px; background-color: #10b981; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"></path>
+                </svg>
+              </div>
+              <div style="background-color: #f0fdf4; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <p style="margin-top: 0; margin-bottom: 0.5rem; font-weight: 500;">您好，我是产品顾问LISA，很高兴为您服务！</p>
+                <p style="margin-bottom: 0.5rem;">我看到您对以下产品感兴趣：</p>
+                <p style="margin-bottom: 0.5rem; font-weight: 500;">${selectedModels.join(', ')}</p>
+                <p style="margin-bottom: 0;">您想了解关于这些产品的哪些具体信息呢？例如价格、交期、库存。</p>
+              </div>
+            </div>
+          `;
+          
+          messagesContainer.insertAdjacentHTML('beforeend', customerServiceHTML);
+          
+          // 滚动到底部
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          
+          // 聚焦输入框，提示用户可以输入
+          if (messageInput) {
+            messageInput.focus();
+            messageInput.setAttribute('placeholder', '请输入您的问题...');
+          }
+        }, 1000);
+      }
+    });
+  }
+}
+
+</script>
+
+
+
+
+
+
+
+<style>
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+</style>
+
+
+
+
+
+
+
+<script>
+// 产品详情数据库
+const productDetails = {
+  'MR-J5-20G': {
+    title: 'MR-J5-20G 三菱电机高精度伺服电机',
+    manufacturer: '三菱电机',
+    rating: '替换 DROP IN',
+    score: '0.98',
+    image: 'https://via.placeholder.com/400x300?text=MR-J5-20G',
+    description: '三菱电机MR-J5系列AC伺服电机，采用最新技术提供卓越的性能和可靠性。适用于需要高精度运动控制的工业自动化应用。',
+    specifications: [
+      { name: '额定功率', value: '2.0 kW' },
+      { name: '额定转速', value: '3000 rpm' },
+      { name: '额定扭矩', value: '6.7 Nm' },
+      { name: '峰值扭矩', value: '20.1 Nm（3倍额定）' },
+      { name: '编码器分辨率', value: '23 bit (8,388,608 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, CC-Link IE TSN' },
+      { name: '响应频率', value: '2.5 kHz' },
+      { name: '防护等级', value: 'IP67 (轴封)' },
+      { name: '工作温度', value: '-10°C ~ +55°C' },
+      { name: '尺寸 (W×H×D)', value: '60×60×180 mm' },
+      { name: '重量', value: '4.8 kg' }
+    ],
+    features: [
+      '领先业界的高精度编码器，提供出色的定位精度',
+      '先进的振动抑制功能，实现平稳运行',
+      '内置自动调谐功能，简化系统设置',
+      '支持多种工业通信协议，易于与现有系统集成',
+      '紧凑设计，优化机器空间利用率'
+    ],
+    applications: [
+      '高精度定位系统',
+      '半导体制造设备',
+      'CNC加工中心',
+      '包装机械',
+      '机器人关节'
+    ],
+    certifications: ['CE', 'UL', 'RoHS', 'KC']
+  },
+  'R88M-1M20030H-S2': {
+    title: 'R88M-1M20030H-S2 欧姆龙高性能伺服电机',
+    manufacturer: '欧姆龙',
+    rating: '形配 FORM&FIT',
+    score: '0.95',
+    image: 'https://via.placeholder.com/400x300?text=R88M-1M20030H-S2',
+    description: '欧姆龙R88M系列伺服电机，提供出色的速度响应和定位精度，特别适合要求高动态性能的应用。',
+    specifications: [
+      { name: '额定功率', value: '2.0 kW' },
+      { name: '额定转速', value: '3000 rpm' },
+      { name: '额定扭矩', value: '6.37 Nm' },
+      { name: '峰值扭矩', value: '19.1 Nm（3倍额定）' },
+      { name: '编码器分辨率', value: '20 bit (1,048,576 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, EtherNet/IP' },
+      { name: '响应频率', value: '2.2 kHz' },
+      { name: '防护等级', value: 'IP65 (轴封)' },
+      { name: '工作温度', value: '-5°C ~ +50°C' },
+      { name: '尺寸 (W×H×D)', value: '60×60×175 mm' },
+      { name: '重量', value: '4.6 kg' }
+    ],
+    features: [
+      '高响应速度特性，适用于高动态应用',
+      '先进的过载保护功能，确保长期可靠运行',
+      '免维护设计，降低拥有成本',
+      '低温升设计，允许高负载连续运行',
+      '兼容多种驱动器系列'
+    ],
+    applications: [
+      '精密定位控制',
+      '食品包装设备',
+      '印刷机械',
+      '纺织机械',
+      '传送系统'
+    ],
+    certifications: ['CE', 'UL', 'CSA', 'RoHS']
+  },
+  'SBM-02VBD1-E': {
+    title: 'SBM-02VBD1-E 安川电机伺服电机',
+    manufacturer: '安川电机',
+    rating: '备选 ALTERNATIVE',
+    score: '0.87',
+    image: 'https://via.placeholder.com/400x300?text=SBM-02VBD1-E',
+    description: '安川电机SBM系列伺服电机，结合高可靠性和出色性能，为工业自动化应用提供理想解决方案。',
+    specifications: [
+      { name: '额定功率', value: '2.0 kW' },
+      { name: '额定转速', value: '3000 rpm' },
+      { name: '额定扭矩', value: '6.4 Nm' },
+      { name: '峰值扭矩', value: '19.2 Nm（3倍额定）' },
+      { name: '编码器分辨率', value: '22 bit (4,194,304 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, MECHATROLINK-III' },
+      { name: '响应频率', value: '2.1 kHz' },
+      { name: '防护等级', value: 'IP65 (轴封)' },
+      { name: '工作温度', value: '-5°C ~ +45°C' },
+      { name: '尺寸 (W×H×D)', value: '60×60×185 mm' },
+      { name: '重量', value: '4.9 kg' }
+    ],
+    features: [
+      '出色的低速平稳性能，适合精密控制',
+      '低振动设计，减少系统共振',
+      '高过载能力，应对瞬态负载',
+      '改进的热管理系统，提高可靠性',
+      '节能设计，降低运行成本'
+    ],
+    applications: [
+      '高精度定位系统',
+      '电子组装设备',
+      '材料处理',
+      '激光切割机',
+      '注塑机'
+    ],
+    certifications: ['CE', 'UL', 'KC', 'RoHS']
+  },
+ 'AKM22G-ACCNC-02': {
+    title: 'AKM22G-ACCNC-02 科尔摩根高精度伺服电机',
+    manufacturer: '科尔摩根',
+    rating: '备选 ALTERNATIVE',
+    score: '0.80',
+    image: 'https://via.placeholder.com/400x300?text=AKM22G-ACCNC-02',
+    description: '科尔摩根AKM系列永磁同步伺服电机，采用先进的设计和材料，提供卓越的动态性能和精确控制，适用于要求高精度定位的应用场景。',
+    specifications: [
+      { name: '额定功率', value: '2.0 kW' },
+      { name: '额定转速', value: '3000 rpm' },
+      { name: '额定扭矩', value: '6.6 Nm' },
+      { name: '峰值扭矩', value: '19.8 Nm（3倍额定）' },
+      { name: '编码器分辨率', value: '24 bit (16,777,216 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, PROFINET, Modbus' },
+      { name: '响应频率', value: '2.3 kHz' },
+      { name: '防护等级', value: 'IP65 (轴封)' },
+      { name: '工作温度', value: '-20°C ~ +40°C' },
+      { name: '尺寸 (W×H×D)', value: '63×63×175 mm' },
+      { name: '重量', value: '4.5 kg' }
+    ],
+    features: [
+      '超高分辨率24位编码器，定位精度±0.001°',
+      '无刷电机设计，免维护运行',
+      '适应广泛的温度范围，适合恶劣环境',
+      '高转矩密度设计，体积紧凑',
+      '特殊绕组设计，提供出色的低速扭矩性能'
+    ],
+    applications: [
+      '高精度定位系统',
+      '医疗设备',
+      '半导体制造设备',
+      '印刷和包装机械',
+      '机器人关节'
+    ],
+    certifications: ['CE', 'UL', 'RoHS', 'ISO 9001']
+  },
+  
+  // 添加MS2N07-XXXXX型号详情
+  'MS2N07-XXXXX': {
+    title: 'MS2N07-XXXXX 博世力士乐同步伺服电机',
+    manufacturer: '博世力士乐',
+    rating: '备选 ALTERNATIVE',
+    score: '0.73',
+    image: 'https://via.placeholder.com/400x300?text=MS2N07-XXXXX',
+    description: '博世力士乐MS2N系列同步伺服电机，采用紧凑设计，提供高性能和可靠性，适用于各种工业自动化应用。',
+    specifications: [
+      { name: '额定功率', value: '2.1 kW' },
+      { name: '额定转速', value: '3000 rpm' },
+      { name: '额定扭矩', value: '6.7 Nm' },
+      { name: '峰值扭矩', value: '20.1 Nm（3倍额定）' },
+      { name: '编码器分辨率', value: '21 bit (2,097,152 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, SERCOS III' },
+      { name: '响应频率', value: '2.0 kHz' },
+      { name: '防护等级', value: 'IP65 (标准)' },
+      { name: '工作温度', value: '-15°C ~ +40°C' },
+      { name: '尺寸 (W×H×D)', value: '65×65×185 mm' },
+      { name: '重量', value: '5.0 kg' }
+    ],
+    features: [
+      '出色的温度管理，确保持续高性能',
+      '优化的电磁设计，减少损耗',
+      '先进的阻尼技术，减少振动和噪音',
+      '模块化设计，易于安装和维护',
+      '多种反馈选项，适应不同精度需求'
+    ],
+    applications: [
+      '精密定位控制',
+      '注塑机械',
+      '金属加工设备',
+      '包装机械',
+      'AGV自动导引车'
+    ],
+    certifications: ['CE', 'UL', 'CSA', 'RoHS', 'EAC']
+  },
+  
+  // 添加SGM7G-20A型号详情
+  'SGM7G-20A': {
+    title: 'SGM7G-20A 安川电机伺服电机',
+    manufacturer: '安川电机',
+    rating: '备选 ALTERNATIVE',
+    score: '0.71',
+    image: 'https://via.placeholder.com/400x300?text=SGM7G-20A',
+    description: '安川电机SGM7G系列伺服电机，采用高密度绕组和优化磁路设计，提供出色的扭矩性能和可靠性，特别适合空间受限的应用。',
+    specifications: [
+      { name: '额定功率', value: '2.0 kW' },
+      { name: '额定转速', value: '2000 rpm' },
+      { name: '额定扭矩', value: '6.37 Nm' },
+      { name: '峰值扭矩', value: '19.1 Nm（3倍额定）' },
+      { name: '编码器分辨率', value: '23 bit (8,388,608 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, MECHATROLINK-III' },
+      { name: '响应频率', value: '1.8 kHz' },
+      { name: '防护等级', value: 'IP67 (全机)' },
+      { name: '工作温度', value: '-10°C ~ +50°C' },
+      { name: '尺寸 (W×H×D)', value: '60×60×170 mm' },
+      { name: '重量', value: '4.7 kg' }
+    ],
+    features: [
+      '23位高精度编码器，提供精确的位置反馈',
+      '高防护等级设计，适合恶劣工业环境',
+      '先进的振动抑制算法，提高机械系统稳定性',
+      '紧凑型设计，减少设备占地面积',
+      '适合高负载应用的优化热设计'
+    ],
+    applications: [
+      '高精度定位系统',
+      '食品加工设备',
+      '纺织机械',
+      '电子组装设备',
+      '送料系统'
+    ],
+    certifications: ['CE', 'UL', 'KC', 'RoHS', 'CCC']
+  },
+  
+  // 添加1FK7063-5AF71型号详情
+  '1FK7063-5AF71': {
+    title: '1FK7063-5AF71 西门子伺服电机',
+    manufacturer: '西门子',
+    rating: '备选 ALTERNATIVE',
+    score: '0.69',
+    image: 'https://via.placeholder.com/400x300?text=1FK7063-5AF71',
+    description: '西门子1FK7系列永磁同步伺服电机，提供可靠的性能和高精度控制，易于集成到西门子自动化系统中，适用于多种工业应用。',
+    specifications: [
+      { name: '额定功率', value: '2.0 kW' },
+      { name: '额定转速', value: '3000 rpm' },
+      { name: '额定扭矩', value: '6.4 Nm' },
+      { name: '峰值扭矩', value: '19.2 Nm（3倍额定）' },
+      { name: '编码器分辨率', value: '22 bit (4,194,304 p/rev)' },
+      { name: '通信协议', value: 'PROFINET, PROFIBUS' },
+      { name: '响应频率', value: '1.9 kHz' },
+      { name: '防护等级', value: 'IP64 (标准)' },
+      { name: '工作温度', value: '-15°C ~ +40°C' },
+      { name: '尺寸 (W×H×D)', value: '65×65×180 mm' },
+      { name: '重量', value: '5.1 kg' }
+    ],
+    features: [
+      '与西门子驱动和控制系统无缝集成',
+      '出色的过载能力，适应变化负载',
+      '优化的冷却设计，允许高功率密度',
+      '低惯量转子设计，提供快速动态响应',
+      '广泛的安装选项，适应不同机械接口'
+    ],
+    applications: [
+      '精密运动控制',
+      '自动化生产线',
+      '材料处理系统',
+      '包装和印刷设备',
+      '机床和加工中心'
+    ],
+    certifications: ['CE', 'UL', 'CCC', 'RoHS', 'EAC']
+  },
+  
+  // 添加MHMD022G1U型号详情
+  'MHMD022G1U': {
+    title: 'MHMD022G1U 松下电器伺服电机',
+    manufacturer: '松下电器',
+    rating: '备选 ALTERNATIVE',
+    score: '0.68',
+    image: 'https://via.placeholder.com/400x300?text=MHMD022G1U',
+    description: '松下MHMD系列伺服电机，结合紧凑设计和高性能特性，提供可靠运行和精确控制，适用于空间有限的精密应用。',
+    specifications: [
+      { name: '额定功率', value: '2.0 kW' },
+      { name: '额定转速', value: '3000 rpm' },
+      { name: '额定扭矩', value: '6.5 Nm' },
+      { name: '峰值扭矩', value: '16.25 Nm（2.5倍额定）' },
+      { name: '编码器分辨率', value: '20 bit (1,048,576 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, Realtime Express' },
+      { name: '响应频率', value: '2.0 kHz' },
+      { name: '防护等级', value: 'IP65 (轴封)' },
+      { name: '工作温度', value: '-5°C ~ +55°C' },
+      { name: '尺寸 (W×H×D)', value: '60×60×170 mm' },
+      { name: '重量', value: '4.5 kg' }
+    ],
+    features: [
+      '增量式编码器提供高精度位置反馈',
+      '紧凑设计，适合空间受限应用',
+      '低噪音运行，适合安静工作环境',
+      '高加速性能，适合快速启停应用',
+      '广泛的温度工作范围'
+    ],
+    applications: [
+      '半导体制造设备',
+      '精密组装机器',
+      '包装设备',
+      '医疗设备',
+      '小型机械手'
+    ],
+    certifications: ['CE', 'UL', 'CCC', 'RoHS', 'KC']
+  },
+  
+  // 添加CMP80S/BP/KY/AZ型号详情
+  'CMP80S/BP/KY/AZ': {
+    title: 'CMP80S/BP/KY/AZ SEW永磁同步伺服电机',
+    manufacturer: 'SEW',
+    rating: '备选 ALTERNATIVE',
+    score: '0.65',
+    image: 'https://via.placeholder.com/400x300?text=CMP80S/BP/KY/AZ',
+    description: 'SEW-EURODRIVE CMP系列永磁同步伺服电机，提供高动态性能和精确控制，适用于各种要求严格的工业应用。',
+    specifications: [
+      { name: '额定功率', value: '2.2 kW' },
+      { name: '额定转速', value: '3500 rpm' },
+      { name: '额定扭矩', value: '6.8 Nm' },
+      { name: '峰值扭矩', value: '23.8 Nm（3.5倍额定）' },
+      { name: '编码器分辨率', value: '20 bit (1,048,576 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, PROFINET, EtherNet/IP' },
+      { name: '响应频率', value: '1.9 kHz' },
+      { name: '防护等级', value: 'IP65 (标准)' },
+      { name: '工作温度', value: '-20°C ~ +40°C' },
+      { name: '尺寸 (W×H×D)', value: '80×80×190 mm' },
+      { name: '重量', value: '5.3 kg' }
+    ],
+    features: [
+      '高转速能力，提供优越的动态性能',
+      '支持多种现场总线协议，灵活集成',
+      '高过载能力，应对动态负载变化',
+      '模块化设计，易于维护和升级',
+      '丰富的制动和反馈选项'
+    ],
+    applications: [
+      '物料搬运系统',
+      '包装机械',
+      '印刷设备',
+      '木工机械',
+      '输送系统'
+    ],
+    certifications: ['CE', 'UL', 'CSA', 'RoHS', 'CCC']
+  },
+  
+  // 添加AKMH-22C-ABC-2E型号详情
+  'AKMH-22C-ABC-2E': {
+    title: 'AKMH-22C-ABC-2E 科尔摩根食品级伺服电机',
+    manufacturer: '科尔摩根',
+    rating: '备选 ALTERNATIVE',
+    score: '0.62',
+    image: 'https://via.placeholder.com/400x300?text=AKMH-22C-ABC-2E',
+    description: '科尔摩根AKMH系列不锈钢伺服电机，专为食品和制药行业设计，提供高防护等级和卫生设计，满足严格的清洁要求。',
+    specifications: [
+      { name: '额定功率', value: '2.0 kW' },
+      { name: '额定转速', value: '3000 rpm' },
+      { name: '额定扭矩', value: '6.5 Nm' },
+      { name: '峰值扭矩', value: '19.5 Nm（3倍额定）' },
+      { name: '编码器分辨率', value: '20 bit (1,048,576 p/rev)' },
+      { name: '通信协议', value: 'EtherCAT, PROFINET' },
+      { name: '响应频率', value: '1.8 kHz' },
+      { name: '防护等级', value: 'IP67/IP69K (全机)' },
+      { name: '工作温度', value: '-10°C ~ +40°C' },
+      { name: '尺寸 (W×H×D)', value: '70×70×190 mm' },
+      { name: '重量', value: '5.5 kg' }
+    ],
+    features: [
+      '304不锈钢外壳，耐腐蚀设计',
+      'IP69K高防护等级，可承受高压冲洗',
+      '无外部缝隙设计，防止细菌积累',
+      '食品级润滑剂，符合FDA标准',
+      '耐清洁剂和消毒剂材料'
+    ],
+    applications: [
+      '食品加工设备',
+      '制药生产线',
+      '乳制品加工',
+      '饮料灌装机',
+      '洁净室自动化'
+    ],
+    certifications: ['CE', 'UL', 'FDA', 'EHEDG', 'RoHS', 'IP69K']
+  }
+}; 
+
+
+
+
+// 显示产品详情
+function showProductDetail(modelId) {
+  // 防止复选框点击事件冒泡触发产品详情
+  event.target.tagName === 'INPUT' ? event.stopPropagation() : null;
+  
+  const product = productDetails[modelId];
+  if (!product) {
+    alert('产品详情暂未提供');
+    return;
+  }
+  
+  const content = document.getElementById('productDetailContent');
+  
+  content.innerHTML = `
+
+
+
+    <div style="display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 1.5rem;">
+      <div style="flex: 1; min-width: 300px;">
+        <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">${product.title}</h2>
+        <div style="margin-bottom: 1rem;">
+          <span style="display: inline-block; padding: 0.3rem 0.6rem; background-color: #eef2ff; color: #2563eb; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-right: 0.5rem;">${product.rating}</span>
+          <span style="display: inline-block; padding: 0.3rem 0.6rem; background-color: #ecfdf5; color: #059669; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">匹配度: ${product.score}</span>
+        </div>
+        <p style="color: #4b5563; line-height: 1.6; margin-bottom: 1.5rem;">${product.description}</p>
+        
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #111827;">主要特点</h3>
+        <ul style="list-style-type: disc; padding-left: 1.2rem; margin-bottom: 1.5rem;">
+          ${product.features.map(feature => `<li style="margin-bottom: 0.5rem; color: #4b5563;">${feature}</li>`).join('')}
+        </ul>
+        
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #111827;">应用场景</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem;">
+          ${product.applications.map(app => `<span style="display: inline-block; padding: 0.3rem 0.6rem; background-color: #f3f4f6; color: #4b5563; border-radius: 4px; font-size: 0.8rem;">${app}</span>`).join('')}
+        </div>
+        
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #111827;">认证</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+          ${product.certifications.map(cert => `<span style="display: inline-block; padding: 0.3rem 0.6rem; background-color: #f3f4f6; color: #4b5563; border-radius: 4px; font-size: 0.8rem;">${cert}</span>`).join('')}
+        </div>
+      </div>
+      
+      <div style="flex: 1; min-width: 300px;">
+        <div style="background-color: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+          <img src="${product.image}" alt="${product.title}" style="width: 100%; border-radius: 4px; margin-bottom: 1rem;">
+          <div style="font-weight: 600; color: #111827; margin-bottom: 0.5rem;">制造商</div>
+          <div style="color: #4b5563; margin-bottom: 1rem;">${product.manufacturer}</div>
+          
+        </div>
+      </div>
+    </div>
+    
+    <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">技术规格</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+      ${product.specifications.map(spec => `
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6;">
+          <div style="color: #6b7280; font-weight: 500;">${spec.name}</div>
+          <div style="color: #111827; font-weight: 500;">${spec.value}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  
+  document.getElementById('productDetailModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // 防止背景滚动
+}
+
+// 关闭产品详情
+function closeProductDetail() {
+  document.getElementById('productDetailModal').style.display = 'none';
+  document.body.style.overflow = ''; // 恢复背景滚动
+}
+
+// 防止复选框点击冒泡触发详情页面
+document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+  checkbox.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+});
 
 
 
@@ -2517,7 +2977,2493 @@
 
 
 
-      </script>
+
+
+
+
+
+
+
+
+
+
+
+
+// 下载产品详情函数
+function downloadProductDetail(modelId) {
+  const product = productDetails[modelId];
+  if (!product) {
+    alert('产品详情不可用');
+    return;
+  }
+  
+  // 创建HTML文档
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${product.title} - 产品详情</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #334155; }
+        h1 { color: #2563eb; font-size: 24px; margin-bottom: 20px; }
+        h2 { color: #334155; font-size: 20px; margin-bottom: 15px; }
+        .tag { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 12px; margin-right: 10px; }
+        .header { margin-bottom: 30px; }
+        .specs { margin: 20px 0; }
+        .specs table { width: 100%; border-collapse: collapse; }
+        .specs th, .specs td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .specs th { background-color: #f8fafc; font-weight: 600; }
+        .feature-list { margin: 20px 0; }
+        .feature-list li { margin-bottom: 10px; }
+        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #64748b; }
+        img { max-width: 100%; height: auto; border-radius: 8px; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>${product.title}</h1>
+        <span class="tag" style="background-color: #eef2ff; color: #2563eb;">${product.rating}</span>
+        <span class="tag" style="background-color: #ecfdf5; color: #059669;">匹配度: ${product.score}</span>
+        
+        <p style="margin-top: 15px;">${product.description}</p>
+        <p style="margin-top: 10px;"><strong>制造商:</strong> ${product.manufacturer}</p>
+      </div>
+      
+      <h2>产品图片</h2>
+      <img src="${product.image}" alt="${product.title}" style="max-width: 400px; margin-bottom: 20px;">
+      
+      <h2>技术规格</h2>
+      <div class="specs">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40%;">参数</th>
+              <th>值</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${product.specifications.map(spec => `
+              <tr>
+                <td>${spec.name}</td>
+                <td>${spec.value}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      
+      <h2>主要特点</h2>
+      <ul class="feature-list">
+        ${product.features.map(feature => `<li>${feature}</li>`).join('')}
+      </ul>
+      
+      <h2>适用场景</h2>
+      <div style="margin: 15px 0;">
+        ${product.applications.map(app => `
+          <span class="tag" style="background-color: #f3f4f6; color: #4b5563;">${app}</span>
+        `).join(' ')}
+      </div>
+      
+      <h2>认证</h2>
+      <div style="margin: 15px 0;">
+        ${product.certifications.map(cert => `
+          <span class="tag" style="background-color: #f3f4f6; color: #4b5563;">${cert}</span>
+        `).join(' ')}
+      </div>
+      
+      <div class="footer">
+        <p>由秒寻 - AI驱动的工业元器件选型助手生成</p>
+        <p>生成日期: ${new Date().toLocaleDateString()}</p>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  // 创建Blob对象
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  
+  // 创建下载链接
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${product.manufacturer}_${modelId}_产品详情.html`;
+  
+  // 触发下载
+  document.body.appendChild(a);
+  a.click();
+  
+  // 清理
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+
+<style>
+/* 表格行悬停样式 */
+div[style*="display: grid"] {
+  transition: background-color 0.2s ease;
+}
+
+div[style*="display: grid"]:hover {
+  background-color: #f0f9ff !important;
+  border-left: 4px solid #2563eb !important;
+}
+
+/* 确保鼠标悬停时显示为指针 */
+div[style*="display: grid"] {
+  cursor: pointer;
+}
+
+/* 复选框鼠标样式保持默认 */
+div[style*="display: grid"] input[type="checkbox"] {
+  cursor: default;
+}
+
+/* 模态框动画效果 */
+#productDetailModal {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#productDetailModal[style*="display: flex"] {
+  opacity: 1;
+}
+
+/* 模态框内容区域动画 */
+#productDetailModal > div {
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+#productDetailModal[style*="display: flex"] > div {
+  transform: translateY(0);
+}
+
+/* 按钮悬停效果 */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* 模态框内的图片效果 */
+#productDetailContent img {
+  transition: transform 0.3s ease;
+}
+
+#productDetailContent img:hover {
+  transform: scale(1.02);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  #productDetailModal > div {
+    width: 95%;
+    max-width: 95%;
+  }
+  
+  #productDetailContent div[style*="display: flex"] {
+    flex-direction: column;
+  }
+}
+</style>
+
+
+
+
+
+
+
+<script>
+// 全局变量，用于存储当前比较的产品
+let currentComparedProducts = [];
+
+
+
+
+
+
+
+
+
+// 生成比较视图内容 - 矩阵式布局
+function generateCompareView(productIds) {
+  currentComparedProducts = productIds;
+  const products = productIds.map(id => productDetails[id]).filter(Boolean);
+  
+  if (products.length < 2) {
+    return '<p>没有足够的产品进行比较</p>';
+  }
+  
+  // 获取所有规格参数名称
+  const allSpecs = [];
+  products.forEach(product => {
+    product.specifications.forEach(spec => {
+      if (!allSpecs.includes(spec.name)) {
+        allSpecs.push(spec.name);
+      }
+    });
+  });
+  
+
+
+
+
+
+
+
+
+
+// 生成矩阵式比较表格
+let tableHTML = `
+  <div style="margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">产品参数对比</h3>
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 12px 16px; min-width: 150px; font-weight: 600;">参数</th>
+`;
+
+// 添加产品列标题
+products.forEach(product => {
+  tableHTML += `
+    <th style="padding: 12px 16px; min-width: 180px; text-align: center; font-weight: 600; border-left: 1px solid #e2e8f0;">
+      <div style="font-size: 15px;">${product.title.split(' ')[0]}</div>
+      <div style="font-size: 13px; color: #64748b; margin-top: 4px;">${product.manufacturer}</div>
+      <div style="font-size: 13px; color: #2563eb; margin-top: 4px; font-weight: 600;">(${product.score})</div>
+    </th>
+  `;
+});
+
+tableHTML += `
+        </tr>
+      </thead>
+      <tbody>
+`;
+
+// 生成规格参数比较行
+allSpecs.forEach((specName, index) => {
+  const isEvenRow = index % 2 === 0;
+  tableHTML += `
+    <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${isEvenRow ? 'white' : '#f9fafb'};">
+      <td style="padding: 10px 16px; font-weight: 500; color: #334155;">${specName}</td>
+  `;
+  
+  // 为每个产品添加参数值，并根据差异添加颜色
+  const specValues = products.map(product => {
+    const spec = product.specifications.find(s => s.name === specName);
+    return spec ? spec.value : 'N/A';
+  });
+  
+  // 检测是否有差异
+  const hasDifference = new Set(specValues.filter(v => v !== 'N/A')).size > 1;
+  
+  // 为每个产品添加参数值单元格
+  specValues.forEach((value, index) => {
+    let cellStyle = 'padding: 10px 16px; text-align: center; border-left: 1px solid #e2e8f0;';
+    
+    // 根据参数性质和值的差异添加颜色标识
+    if (hasDifference) {
+      // 对于数值型参数，判断是否是最优值
+      if (specName.includes('功率') || specName.includes('扭矩') || 
+          specName.includes('转速') || specName.includes('分辨率')) {
+        
+        // 提取数字部分进行比较
+        const numbers = specValues.map(v => {
+          const match = v.match(/[\d.]+/);
+          return match ? parseFloat(match[0]) : 0;
+        });
+        
+        const currentNumber = numbers[index];
+        
+        // 判断是更高还是更低更好
+        let isHigherBetter = specName.includes('功率') || specName.includes('扭矩') || 
+                             specName.includes('转速') || specName.includes('分辨率');
+        
+        if (isHigherBetter) {
+          if (currentNumber === Math.max(...numbers)) {
+            cellStyle += 'background-color: #dcfce7; color: #15803d; font-weight: 600;'; // 绿色-最好
+          } else if (currentNumber > Math.min(...numbers)) {
+            cellStyle += 'background-color: #fef9c3; color: #854d0e;'; // 黄色-中等
+          } else {
+            cellStyle += 'background-color: #fee2e2; color: #b91c1c;'; // 红色-较差
+          }
+        } else {
+          // 有些参数是越低越好
+          if (currentNumber === Math.min(...numbers)) {
+            cellStyle += 'background-color: #dcfce7; color: #15803d; font-weight: 600;'; // 绿色-最好
+          } else if (currentNumber < Math.max(...numbers)) {
+            cellStyle += 'background-color: #fef9c3; color: #854d0e;'; // 黄色-中等
+          } else {
+            cellStyle += 'background-color: #fee2e2; color: #b91c1c;'; // 红色-较差
+          }
+        }
+      } else {
+        // 非数值型参数，只标记不同
+        cellStyle += 'background-color: #f1f5f9;';
+      }
+    }
+    
+    tableHTML += `<td style="${cellStyle}">${value}</td>`;
+  });
+  
+  tableHTML += `</tr>`;
+});
+
+tableHTML += `
+      </tbody>
+    </table>
+  </div>
+</div>
+`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  // 添加雷达图容器
+  tableHTML += `
+    <div style="margin-top: 2rem;">
+      <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">性能雷达图比较</h3>
+      <div id="radarChartContainer" style="height: 400px; background-color: #f8fafc; border-radius: 8px; padding: 1rem; position: relative;">
+        <canvas id="radarChart" width="400" height="300"></canvas>
+        <div class="chart-info">悬停在图表上可查看详细数据</div>
+      </div>
+      <div class="chart-legend" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+        ${products.map((product, index) => {
+          const colors = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
+          return `
+            <div class="legend-item" style="display: flex; align-items: center; font-size: 0.875rem;">
+              <div class="legend-color" style="width: 12px; height: 12px; border-radius: 50%; margin-right: 4px; background-color: ${colors[index % colors.length]};"></div>
+              <span>${product.title.split(' ')[0]}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+  
+  // 添加特点比较 - 矩阵式布局
+  tableHTML += `
+    <div style="margin-top: 2rem;">
+      <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">产品特点比较</h3>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+          <thead>
+            <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+              <th style="padding: 12px 16px; font-weight: 600; width: 50px;">序号</th>
+  `;
+  
+  // 添加产品列标题
+  products.forEach(product => {
+    tableHTML += `
+      <th style="padding: 12px 16px; text-align: center; font-weight: 600; border-left: 1px solid #e2e8f0;">
+        ${product.title.split(' ')[0]}
+      </th>
+    `;
+  });
+  
+  tableHTML += `
+            </tr>
+          </thead>
+          <tbody>
+  `;
+  
+  // 找出最多特点的产品
+  const maxFeatures = Math.max(...products.map(p => p.features.length));
+  
+  // 逐行添加特点
+  for (let i = 0; i < maxFeatures; i++) {
+    const isEvenRow = i % 2 === 0;
+    tableHTML += `
+      <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${isEvenRow ? 'white' : '#f9fafb'};">
+        <td style="padding: 10px 16px; font-weight: 500; color: #334155; text-align: center;">${i + 1}</td>
+    `;
+    
+    products.forEach(product => {
+      const feature = i < product.features.length ? product.features[i] : '—';
+      tableHTML += `
+        <td style="padding: 10px 16px; border-left: 1px solid #e2e8f0;">
+          ${feature}
+        </td>
+      `;
+    });
+    
+    tableHTML += `</tr>`;
+  }
+  
+  tableHTML += `
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  
+  // 添加总结
+  tableHTML += `
+    <div style="margin-top: 2rem; padding: 1.25rem; background-color: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+      <h3 style="margin-bottom: 0.75rem; color: #334155; font-size: 1.1rem;">比较总结</h3>
+      <div style="line-height: 1.6; color: #334155;">
+        ${generateComparisonSummary(products)}
+      </div>
+    </div>
+  `;
+  
+  return tableHTML;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 生成比较总结
+function generateComparisonSummary(products) {
+  // 简单的总结逻辑，根据评分和关键参数对产品进行比较
+  let summary = '';
+  
+  // 按评分排序
+  const sortedProducts = [...products].sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+  const bestProduct = sortedProducts[0];
+  const others = sortedProducts.slice(1);
+  
+  // 分析最优产品的优势
+  summary += `<strong>${bestProduct.title.split(' ')[0]}</strong> (匹配度 ${bestProduct.score}) 是最佳选择，`;
+  
+  // 分析功率/扭矩
+  const torqueSpecs = products.map(p => {
+    const spec = p.specifications.find(s => s.name === '额定扭矩');
+    return {
+      product: p.title.split(' ')[0],
+      value: spec ? parseFloat(spec.value.match(/[\d.]+/)[0]) : 0
+    };
+  });
+  
+  const maxTorque = Math.max(...torqueSpecs.map(t => t.value));
+  const maxTorqueProduct = torqueSpecs.find(t => t.value === maxTorque).product;
+  
+  summary += `其中 <strong>${maxTorqueProduct}</strong> 提供最高的额定扭矩 ${maxTorque} Nm，`;
+  
+  // 分析编码器分辨率
+  const resolutionSpecs = products.map(p => {
+    const spec = p.specifications.find(s => s.name === '编码器分辨率');
+    let bits = 0;
+    if (spec) {
+      const match = spec.value.match(/(\d+)\s*bit/);
+      if (match) bits = parseInt(match[1]);
+    }
+    return {
+      product: p.title.split(' ')[0],
+      bits: bits
+    };
+  });
+  
+  const maxResolution = Math.max(...resolutionSpecs.map(r => r.bits));
+  const maxResProduct = resolutionSpecs.find(r => r.bits === maxResolution).product;
+  
+  summary += `<strong>${maxResProduct}</strong> 配备 ${maxResolution} bit 编码器提供最高精度。`;
+  
+  // 为不同应用场景提供建议
+  summary += `<br><br>如果您的应用更注重精度控制，建议选择 <strong>${maxResProduct}</strong>；`;
+  summary += `如果需要更高扭矩输出，<strong>${maxTorqueProduct}</strong> 是更好的选择；`;
+  summary += `如果寻求最佳综合性能，<strong>${bestProduct.title.split(' ')[0]}</strong> 提供最平衡的性能指标。`;
+  
+  return summary;
+}
+
+// 显示比较视图
+function showCompareView(productIds) {
+  const compareContent = document.getElementById('compareContent');
+  compareContent.innerHTML = generateCompareView(productIds);
+  
+  const compareModal = document.getElementById('compareModal');
+  compareModal.style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // 防止背景滚动
+}
+
+// 关闭比较视图
+function closeCompareView() {
+  document.getElementById('compareModal').style.display = 'none';
+  document.body.style.overflow = ''; // 恢复背景滚动
+}
+
+// 将比较总结添加到对话中
+function addToComparisonSummary() {
+  const products = currentComparedProducts.map(id => productDetails[id]).filter(Boolean);
+  const summaryText = generateComparisonSummary(products);
+  
+  const messagesContainer = document.querySelector('#core-features > div:nth-child(2) > div:first-child > div:first-child');
+  if (messagesContainer) {
+    const aiMessageHTML = `
+      <div style="display: flex; margin-bottom: 1rem;">
+        <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+            <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+            <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+            <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+          </svg>
+        </div>
+        <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+          <p style="margin-top: 0; margin-bottom: 0.75rem; font-weight: 500;">产品比较结果</p>
+          <div style="margin-bottom: 0.5rem; color: #334155; line-height: 1.6;">${summaryText}</div>
+        </div>
+      </div>
+    `;
+    
+    messagesContainer.insertAdjacentHTML('beforeend', aiMessageHTML);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+  
+  // 关闭比较视图
+  closeCompareView();
+}
+
+// 修改比较按钮点击事件
+document.addEventListener('DOMContentLoaded', function() {
+  // 其他已有代码保持不变...
+  
+  // 修改比较按钮功能
+  const constraintQuerySection = document.getElementById('constraint-query-content');
+  if (constraintQuerySection) {
+    const buttonContainer = constraintQuerySection.querySelector('#core-features > div > div:last-child');
+    if (buttonContainer) {
+      const compareButton = buttonContainer.querySelector('button:nth-child(1)');
+      if (compareButton) {
+        compareButton.addEventListener('click', function() {
+          const checkboxes = constraintQuerySection.querySelectorAll('input[type="checkbox"]');
+          const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+          
+          if (selectedCount < 2) {
+            alert('请至少选择2个产品进行比较');
+            return;
+          }
+          
+          // 获取选中型号
+          const selectedModels = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => {
+              const row = cb.closest('div[style*="display: grid"]');
+              return row ? row.querySelector('div:nth-child(2)').textContent : '';
+            })
+            .filter(Boolean);
+          
+          // 在消息区域添加比较通知
+          const messagesContainer = constraintQuerySection.querySelector('#core-features > div:nth-child(2) > div:first-child > div:first-child');
+          if (messagesContainer) {
+            const compareMessageHTML = `
+              <div style="display: flex; margin-bottom: 1rem;">
+                <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+                    <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+                    <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+                    <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+                  </svg>
+                </div>
+                <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                  <p style="margin-top: 0; margin-bottom: 0.5rem;">我已为您创建了比较视图，对比了以下型号:</p>
+                  <p style="margin-bottom: 0.5rem; font-weight: 500;">${selectedModels.join(', ')}</p>
+                  <p style="margin-bottom: 0;">正在打开详细比较界面，您可以查看产品参数对比与性能差异。</p>
+                </div>
+              </div>
+            `;
+            
+            messagesContainer.insertAdjacentHTML('beforeend', compareMessageHTML);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          }
+          
+          // 显示比较视图
+          showCompareView(selectedModels);
+        });
+      }
+    }
+  }
+});
+
+// 添加比较视图样式
+document.head.insertAdjacentHTML('beforeend', `
+  <style>
+    /* 比较模态框样式 */
+    #compareModal {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    #compareModal[style*="display: flex"] {
+      opacity: 1;
+    }
+    
+    #compareModal > div {
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    
+    #compareModal[style*="display: flex"] > div {
+      transform: translateY(0);
+    }
+    
+    /* 比较表格悬停效果 */
+    #compareContent div[style*="display: flex; border-bottom"]:hover {
+      background-color: #f8fafc;
+    }
+    
+    /* 强调最优参数 */
+    #compareContent div[style*="background-color: #dcfce7"] {
+      font-weight: 600;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      #compareModal > div {
+        width: 95%;
+        max-width: 95%;
+      }
+      
+            #compareContent div[style*="display: flex"] {
+        flex-direction: column;
+        margin-bottom: 1rem;
+      }
+      
+      #compareContent div[style*="display: flex"] > div {
+        width: 100%;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      
+      #compareContent div[style*="display: flex"] > div:first-child {
+        font-weight: 600;
+        background-color: #f1f5f9;
+        padding: 0.5rem;
+        border-radius: 4px;
+      }
+    }
+    
+    /* 动画效果 */
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+    
+    /* 高亮最优参数 */
+    .best-parameter {
+      position: relative;
+      animation: pulse 2s infinite;
+    }
+    
+    /* 比较按钮悬停效果 */
+    button[onclick="addToComparisonSummary()"] {
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    
+    button[onclick="addToComparisonSummary()"]:hover {
+      background-color: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    
+    button[onclick="addToComparisonSummary()"]:active {
+      transform: translateY(0);
+    }
+    
+    /* 参数差异标记的工具提示 */
+    [data-tooltip] {
+      position: relative;
+      cursor: help;
+    }
+    
+    [data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.5rem;
+      background-color: #334155;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    
+    [data-tooltip]:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    /* 图表容器样式 */
+    .chart-container {
+      margin-top: 2rem;
+      height: 300px;
+      background-color: #f8fafc;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+  </style>
+`);
+
+// 创建雷达图比较
+function createRadarChart(products) {
+  // 假设这里会使用Chart.js或其他库来创建雷达图
+  const chartContainer = document.createElement('div');
+  chartContainer.className = 'chart-container';
+  chartContainer.innerHTML = `
+    <h3 style="margin-top: 0; margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">性能雷达图比较</h3>
+    <div style="display: flex; justify-content: center; align-items: center; height: 250px; color: #64748b;">
+      <p>图表将在这里显示各产品在不同性能维度的对比</p>
+    </div>
+  `;
+  
+  return chartContainer;
+}
+
+// 增强比较视图
+function enhanceCompareView() {
+  // 为最优参数添加动画效果
+  const bestParams = document.querySelectorAll('#compareContent div[style*="background-color: #dcfce7"]');
+  bestParams.forEach(param => {
+    param.classList.add('best-parameter');
+    param.setAttribute('data-tooltip', '此参数在比较中性能最佳');
+  });
+  
+  // 在适当位置添加雷达图
+  const products = currentComparedProducts.map(id => productDetails[id]).filter(Boolean);
+  const compareContent = document.getElementById('compareContent');
+  const radarChart = createRadarChart(products);
+  
+  // 在特点比较后添加雷达图
+  const featureSection = compareContent.querySelector('div[style*="margin-top: 2rem"]');
+  if (featureSection) {
+    featureSection.parentNode.insertBefore(radarChart, featureSection.nextSibling);
+  }
+}
+
+// 修改showCompareView函数以包含增强功能
+const originalShowCompareView = showCompareView;
+showCompareView = function(productIds) {
+  originalShowCompareView(productIds);
+  // 在视图显示后添加增强功能
+  setTimeout(enhanceCompareView, 100);
+};
+
+// 添加比较结果导出功能
+function exportComparisonResult() {
+  // 创建一个虚拟链接用于下载
+  const a = document.createElement('a');
+  
+  // 获取比较结果内容
+  const products = currentComparedProducts.map(id => productDetails[id]).filter(Boolean);
+  const summaryText = generateComparisonSummary(products);
+  
+  // 创建导出内容
+  let exportContent = "产品比较结果\n\n";
+  exportContent += "比较的产品：\n";
+  products.forEach(product => {
+    exportContent += `- ${product.title} (${product.manufacturer})\n`;
+  });
+  
+  exportContent += "\n性能参数对比：\n";
+  // 添加关键参数对比
+  const keySpecs = ['额定功率', '额定扭矩', '最高转速', '编码器分辨率'];
+  keySpecs.forEach(specName => {
+    exportContent += `\n${specName}：\n`;
+    products.forEach(product => {
+      const spec = product.specifications.find(s => s.name === specName);
+      exportContent += `- ${product.title.split(' ')[0]}: ${spec ? spec.value : 'N/A'}\n`;
+    });
+  });
+  
+  exportContent += "\n总结：\n";
+  // 移除HTML标签
+  exportContent += summaryText.replace(/<\/?[^>]+(>|$)/g, "");
+  
+  // 创建Blob对象
+  const blob = new Blob([exportContent], {type: 'text/plain'});
+  
+  // 设置下载链接
+  a.href = URL.createObjectURL(blob);
+  a.download = '产品比较.txt';
+  
+  // 触发下载
+  document.body.appendChild(a);
+  a.click();
+  
+  // 清理
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+// 添加导出按钮
+function addExportButton() {
+  const modalActions = document.querySelector('#compareModal > div > div[style*="display: flex; justify-content: flex-end"]');
+  if (modalActions) {
+    const exportButton = document.createElement('button');
+    exportButton.textContent = '导出比较';
+    exportButton.style.cssText = 'padding: 0.5rem 1rem; background-color: #0f766e; color: white; border: none; border-radius: 6px; cursor: pointer;';
+    exportButton.onclick = exportComparisonResult;
+    
+    modalActions.insertBefore(exportButton, modalActions.firstChild);
+  }
+}
+
+// 修改showCompareView函数以添加导出按钮
+const enhancedShowCompareView = showCompareView;
+showCompareView = function(productIds) {
+  enhancedShowCompareView(productIds);
+  // 添加导出按钮
+  setTimeout(addExportButton, 100);
+};
+</script>
+
+
+
+
+
+
+
+
+
+
+<script>
+// 绘制雷达图比较函数
+function drawRadarChart(products) {
+  // 清除之前的图表
+  const chartContainer = document.getElementById('radarChartContainer');
+  chartContainer.innerHTML = '<canvas id="radarChart" width="400" height="300"></canvas>';
+  
+  // 获取关键性能参数
+  const parameters = ['额定功率', '额定扭矩', '最高转速', '编码器分辨率', '响应时间'];
+  const parameterScales = {
+    '额定功率': { regex: /(\d+\.?\d*)/, unit: 'W', higher: true },
+    '额定扭矩': { regex: /(\d+\.?\d*)/, unit: 'Nm', higher: true },
+    '最高转速': { regex: /(\d+\.?\d*)/, unit: 'rpm', higher: true },
+    '编码器分辨率': { regex: /(\d+)/, unit: 'bit', higher: true },
+    '响应时间': { regex: /(\d+\.?\d*)/, unit: 'ms', higher: false }
+  };
+  
+  // 为每个产品准备数据
+  const datasets = [];
+  const colors = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
+  
+  products.forEach((product, index) => {
+    // 归一化产品参数值
+    const data = parameters.map(param => {
+      const spec = product.specifications.find(s => s.name === param);
+      if (!spec) return 0;
+      
+      const paramInfo = parameterScales[param];
+      const match = spec.value.match(paramInfo.regex);
+      if (!match) return 0;
+      
+      let value = parseFloat(match[1]);
+      
+      // 为了展示效果，将值归一化到0-100区间
+      if (param === '额定功率') value = value / 5; // 假设最大500W
+      else if (param === '额定扭矩') value = value * 5; // 假设最大20Nm
+      else if (param === '最高转速') value = value / 60; // 假设最大6000rpm
+      else if (param === '编码器分辨率') value = value * 5; // 假设最大20bit
+      else if (param === '响应时间') value = 100 - value * 10; // 假设最小1ms最大10ms，并反转值
+      
+      return Math.min(100, Math.max(0, value));
+    });
+    
+    datasets.push({
+      label: product.title.split(' ')[0],
+      data: data,
+      backgroundColor: `${colors[index % colors.length]}20`,
+      borderColor: colors[index % colors.length],
+      pointBackgroundColor: colors[index % colors.length],
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: colors[index % colors.length]
+    });
+  });
+  
+  // 创建雷达图
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['功率', '扭矩', '转速', '精度', '响应速度'],
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      elements: {
+        line: {
+          borderWidth: 2
+        }
+      },
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          ticks: {
+            display: false
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            font: {
+              size: 12
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            title: function(context) {
+              return context[0].label;
+            },
+            label: function(context) {
+              const paramIndex = context.dataIndex;
+              const paramName = parameters[paramIndex];
+              const productIndex = context.datasetIndex;
+              const product = products[productIndex];
+              const spec = product.specifications.find(s => s.name === paramName);
+              
+              return spec ? `${paramName}: ${spec.value}` : `${paramName}: 无数据`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// 替换当前的generateCompareView函数，确保只有一个版本并且包含雷达图功能
+function generateCompareView(productIds) {
+  currentComparedProducts = productIds;
+  const products = productIds.map(id => productDetails[id]).filter(Boolean);
+  
+  if (products.length < 2) {
+    return '<p>没有足够的产品进行比较</p>';
+  }
+  
+  // 获取所有规格参数名称
+  const allSpecs = [];
+  products.forEach(product => {
+    product.specifications.forEach(spec => {
+      if (!allSpecs.includes(spec.name)) {
+        allSpecs.push(spec.name);
+      }
+    });
+  });
+  
+  // 生成比较表格头部
+  let tableHTML = `
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+      <div style="flex: 1;">
+        <div style="text-align: center; font-weight: 600; margin-bottom: 0.75rem; color: #334155; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0;">参数</div>
+  `;
+  
+  // 添加产品列 - 完全横向排列版本
+products.forEach(product => {
+  tableHTML += `
+    <div style="flex: 1;">
+      <div style="text-align: center; font-weight: 600; margin-bottom: 0.75rem; color: #334155; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: center; align-items: baseline; flex-wrap: wrap; gap: 0.5rem;">
+        <span>${product.title.split(' ')[0]}</span>
+        <span style="font-size: 0.85rem; font-weight: normal; color: #64748b;">${product.manufacturer}</span>
+        <span style="color: #2563eb; font-size: 0.85rem; font-weight: 500;">(${product.score})</span>
+      </div>
+  `;
+});
+  
+  tableHTML += `</div>`;
+  
+  // 生成规格参数比较行
+  allSpecs.forEach(specName => {
+    tableHTML += `
+      <div style="display: flex; border-bottom: 1px solid #e2e8f0; padding: 0.75rem 0;">
+        <div style="flex: 1; font-weight: 500; color: #334155;">${specName}</div>
+    `;
+    
+    // 为每个产品添加参数值，并根据差异添加颜色
+    const specValues = products.map(product => {
+      const spec = product.specifications.find(s => s.name === specName);
+      return spec ? spec.value : 'N/A';
+    });
+    
+    // 检测是否有差异
+    const hasDifference = new Set(specValues.filter(v => v !== 'N/A')).size > 1;
+    
+    // 为每个产品添加参数值单元格
+    specValues.forEach((value, index) => {
+      let cellStyle = '';
+      
+      // 根据参数性质和值的差异添加颜色标识
+      if (hasDifference) {
+        // 对于数值型参数，判断是否是最优值
+        if (specName.includes('功率') || specName.includes('扭矩') || 
+            specName.includes('转速') || specName.includes('分辨率')) {
+          
+          // 提取数字部分进行比较
+          const numbers = specValues.map(v => {
+            const match = v.match(/[\d.]+/);
+            return match ? parseFloat(match[0]) : 0;
+          });
+          
+          const currentNumber = numbers[index];
+          
+          // 判断是更高还是更低更好
+          let isHigherBetter = specName.includes('功率') || specName.includes('扭矩') || 
+                               specName.includes('转速') || specName.includes('分辨率');
+          
+          if (isHigherBetter) {
+            if (currentNumber === Math.max(...numbers)) {
+              cellStyle = 'background-color: #dcfce7; color: #15803d;'; // 绿色-最好
+            } else if (currentNumber > Math.min(...numbers)) {
+              cellStyle = 'background-color: #fef9c3; color: #854d0e;'; // 黄色-中等
+            } else {
+              cellStyle = 'background-color: #fee2e2; color: #b91c1c;'; // 红色-较差
+            }
+          } else {
+            // 有些参数是越低越好
+            if (currentNumber === Math.min(...numbers)) {
+              cellStyle = 'background-color: #dcfce7; color: #15803d;'; // 绿色-最好
+            } else if (currentNumber < Math.max(...numbers)) {
+              cellStyle = 'background-color: #fef9c3; color: #854d0e;'; // 黄色-中等
+            } else {
+              cellStyle = 'background-color: #fee2e2; color: #b91c1c;'; // 红色-较差
+            }
+          }
+        } else {
+          // 非数值型参数，只标记不同
+          cellStyle = 'background-color: #f1f5f9;';
+        }
+      }
+      
+      tableHTML += `<div style="flex: 1; text-align: center; ${cellStyle}">${value}</div>`;
+    });
+    
+    tableHTML += `</div>`;
+  });
+  
+  // 添加雷达图容器 - 这是关键修改部分
+  tableHTML += `
+    <div style="margin-top: 2rem;">
+      <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">性能雷达图比较</h3>
+      <div id="radarChartContainer" style="height: 400px; background-color: #f8fafc; border-radius: 8px; padding: 1rem; position: relative;">
+        <canvas id="radarChart" width="400" height="300"></canvas>
+        <div class="chart-info">悬停在图表上可查看详细数据</div>
+      </div>
+      <div class="chart-legend" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+        ${products.map((product, index) => {
+          const colors = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
+          return `
+            <div class="legend-item" style="display: flex; align-items: center; font-size: 0.875rem;">
+              <div class="legend-color" style="width: 12px; height: 12px; border-radius: 50%; margin-right: 4px; background-color: ${colors[index % colors.length]};"></div>
+              <span>${product.title.split(' ')[0]}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+  
+  // 添加特点比较
+  tableHTML += `
+    <div style="margin-top: 2rem;">
+      <h3 style="margin-bottom: 1rem; color: #334155; font-size: 1.1rem;">产品特点比较</h3>
+      <div style="display: flex; gap: 1rem;">
+  `;
+  
+  // 为每个产品添加特点列表
+  products.forEach(product => {
+    tableHTML += `
+      <div style="flex: 1; background-color: #f8fafc; padding: 1rem; border-radius: 8px;">
+        <div style="font-weight: 600; margin-bottom: 0.75rem; color: #334155;">${product.title.split(' ')[0]}</div>
+        <ul style="padding-left: 1.25rem; margin: 0;">
+    `;
+    
+    product.features.forEach(feature => {
+      tableHTML += `<li style="margin-bottom: 0.5rem; font-size: 0.9rem;">${feature}</li>`;
+    });
+    
+    tableHTML += `</ul></div>`;
+  });
+  
+  tableHTML += `</div>`;
+  
+  // 添加总结
+  tableHTML += `
+    <div style="margin-top: 2rem; padding: 1.25rem; background-color: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+      <h3 style="margin-bottom: 0.75rem; color: #334155; font-size: 1.1rem;">比较总结</h3>
+      <div style="line-height: 1.6; color: #334155;">
+  `;
+  
+  // 生成比较总结文本
+  let summaryText = generateComparisonSummary(products);
+  tableHTML += `<p>${summaryText}</p>`;
+  
+  tableHTML += `</div></div>`;
+  
+  return tableHTML;
+}
+
+// 修改showCompareView函数，确保正确调用雷达图绘制
+function showCompareView(productIds) {
+  const compareContent = document.getElementById('compareContent');
+  compareContent.innerHTML = generateCompareView(productIds);
+  
+  const compareModal = document.getElementById('compareModal');
+  compareModal.style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // 防止背景滚动
+  
+  // 确保在DOM渲染完成后再绘制图表
+  setTimeout(() => {
+    try {
+      const products = productIds.map(id => productDetails[id]).filter(Boolean);
+      drawRadarChart(products);
+    } catch (error) {
+      console.error('绘制雷达图时出错:', error);
+      // 添加错误回退显示
+      const chartContainer = document.getElementById('radarChartContainer');
+      if (chartContainer) {
+        chartContainer.innerHTML = `
+          <div style="padding: 1rem; text-align: center; color: #dc2626;">
+            <p>图表加载失败，请确保网络连接正常并刷新页面重试。</p>
+          </div>
+        `;
+      }
+    }
+  }, 200); // 增加延迟时间以确保DOM完全准备好
+}
+
+// 增强drawRadarChart函数的可靠性
+function drawRadarChart(products) {
+  // 检查容器是否存在
+  const chartContainer = document.getElementById('radarChartContainer');
+  if (!chartContainer) {
+    console.error('找不到图表容器');
+    return;
+  }
+  
+  // 检查Chart对象是否可用
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js库未加载');
+    chartContainer.innerHTML = `
+      <div style="padding: 1rem; text-align: center; color: #dc2626;">
+        <p>图表库加载失败，请刷新页面重试。</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // 清除之前的图表
+  chartContainer.innerHTML = '<canvas id="radarChart" width="400" height="300"></canvas>';
+  
+  // 获取关键性能参数
+  const parameters = ['额定功率', '额定扭矩', '额定转速', '编码器分辨率', '响应频率'];
+  const parameterScales = {
+    '额定功率': { regex: /(\d+\.?\d*)/, unit: 'kW', higher: true },
+    '额定扭矩': { regex: /(\d+\.?\d*)/, unit: 'Nm', higher: true },
+    '额定转速': { regex: /(\d+\.?\d*)/, unit: 'rpm', higher: true },
+    '编码器分辨率': { regex: /(\d+)/, unit: 'bit', higher: true },
+    '响应频率': { regex: /(\d+\.?\d*)/, unit: 'kHz', higher: true }
+  };
+  
+  // 为每个产品准备数据
+  const datasets = [];
+  const colors = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed'];
+  
+  products.forEach((product, index) => {
+    // 归一化产品参数值
+    const data = parameters.map(param => {
+      const spec = product.specifications.find(s => s.name === param);
+      if (!spec) return 50; // 默认中间值，避免图表空白
+      
+      const paramInfo = parameterScales[param];
+      if (!paramInfo) return 50;
+      
+      const match = spec.value.match(paramInfo.regex);
+      if (!match) return 50;
+      
+      let value = parseFloat(match[1]);
+      
+      // 为了展示效果，将值归一化到0-100区间
+      if (param === '额定功率') value = (value / 3) * 100; // 归一化功率
+      else if (param === '额定扭矩') value = (value / 10) * 100; // 归一化扭矩
+      else if (param === '额定转速') value = (value / 4000) * 100; // 归一化转速
+      else if (param === '编码器分辨率') value = (value / 24) * 100; // 归一化分辨率
+      else if (param === '响应频率') value = (value / 3) * 100; // 归一化响应频率
+      
+      return Math.min(100, Math.max(20, value)); // 保证至少有20%的值，避免图表太小
+    });
+    
+    datasets.push({
+      label: product.title.split(' ')[0],
+      data: data,
+      backgroundColor: `${colors[index % colors.length]}33`, // 33是透明度20%的十六进制
+      borderColor: colors[index % colors.length],
+      pointBackgroundColor: colors[index % colors.length],
+      borderWidth: 2,
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: colors[index % colors.length],
+      pointRadius: 4,
+      pointHoverRadius: 6
+    });
+  });
+  
+  // 创建雷达图
+  const ctx = document.getElementById('radarChart');
+  if (!ctx) {
+    console.error('找不到图表Canvas元素');
+    return;
+  }
+  
+  try {
+    new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['功率', '扭矩', '转速', '精度', '响应速度'],
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        elements: {
+          line: {
+            tension: 0.1 // 使线条更平滑
+          }
+        },
+        plugins: {
+          legend: {
+            display: false // 不显示默认图例，使用自定义图例
+          },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.8)',
+            titleFont: {
+              size: 14,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 13
+            },
+            padding: 10,
+            callbacks: {
+              title: function(context) {
+                return context[0].dataset.label;
+              },
+              label: function(context) {
+                const paramIndex = context.dataIndex;
+                const paramName = parameters[paramIndex];
+                const productIndex = context.datasetIndex;
+                const product = products[productIndex];
+                const spec = product.specifications.find(s => s.name === paramName);
+                
+                return spec ? `${paramName}: ${spec.value}` : `${paramName}: 无数据`;
+              }
+            }
+          }
+        },
+        scales: {
+          r: {
+            min: 0,
+            max: 100,
+            ticks: {
+              display: false
+            },
+            pointLabels: {
+              font: {
+                size: 14,
+                weight: 'bold'
+              },
+              color: '#334155'
+            },
+            grid: {
+                            color: 'rgba(226, 232, 240, 0.8)'
+            },
+            angleLines: {
+              color: 'rgba(226, 232, 240, 0.8)'
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('创建雷达图时出错:', error);
+    chartContainer.innerHTML = `
+      <div style="padding: 1rem; text-align: center; color: #dc2626;">
+        <p>图表创建失败: ${error.message}</p>
+        <p>请刷新页面重试</p>
+      </div>
+    `;
+  }
+}
+
+// 添加比较总结生成函数
+function generateComparisonSummary(products) {
+  if (products.length < 2) return "需要至少两个产品才能生成比较总结。";
+  
+  // 提取产品名称
+  const productNames = products.map(p => p.title.split(' ')[0]);
+  
+  // 比较关键规格
+  const keySpecs = ['额定功率', '额定扭矩', '额定转速', '编码器分辨率'];
+  const comparisons = [];
+  
+  keySpecs.forEach(specName => {
+    // 收集所有产品的该规格值
+    const specValues = products.map(product => {
+      const spec = product.specifications.find(s => s.name === specName);
+      if (!spec) return { product: product.title.split(' ')[0], value: null };
+      
+      // 提取数值部分
+      const match = spec.value.match(/[\d.]+/);
+      if (!match) return { product: product.title.split(' ')[0], value: null };
+      
+      return { 
+        product: product.title.split(' ')[0], 
+        value: parseFloat(match[0]),
+        fullValue: spec.value 
+      };
+    }).filter(item => item.value !== null);
+    
+    if (specValues.length < 2) return; // 跳过没有足够数据的规格
+    
+    // 根据规格类型，判断值的优劣
+    let isHigherBetter = specName.includes('功率') || specName.includes('扭矩') || 
+                          specName.includes('转速') || specName.includes('分辨率');
+    
+    // 排序找出最佳值
+    specValues.sort((a, b) => isHigherBetter ? b.value - a.value : a.value - b.value);
+    
+    // 添加比较结论
+    if (specValues[0].value !== specValues[1].value) {
+      const diff = ((Math.abs(specValues[0].value - specValues[1].value) / specValues[1].value) * 100).toFixed(0);
+      if (diff > 5) { // 只有当差异超过5%才添加比较
+        comparisons.push(`在${specName}方面，${specValues[0].product}(${specValues[0].fullValue})比${specValues[1].product}(${specValues[1].fullValue})${isHigherBetter ? '高' : '低'}出约${diff}%。`);
+      }
+    }
+  });
+  
+  // 生成总结文本
+  let summary = `我们对${productNames.join('、')}进行了详细比较，`;
+  
+  if (comparisons.length > 0) {
+    summary += `主要差异体现在：${comparisons.join(' ')}`;
+  } else {
+    summary += `这些产品在关键规格参数上相近，差异不显著。`;
+  }
+  
+  // 添加推荐
+  summary += ` 建议您根据具体使用场景、预算和品牌偏好做出选择。如果您注重${keySpecs[0]}，${productNames[0]}可能是更好的选择；如果您对性价比更关注，请参考详细参数表格进行决策。`;
+  
+  return summary;
+}
+
+// 确保Chart.js库已加载的检查函数
+function ensureChartLibraryLoaded() {
+  if (typeof Chart === 'undefined') {
+    // 如果Chart对象不存在，动态加载Chart.js库
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    script.async = true;
+    script.onload = function() {
+      console.log('Chart.js库已成功加载');
+      // 如果当前正在比较产品，重新绘制图表
+      if (currentComparedProducts && currentComparedProducts.length >= 2) {
+        const products = currentComparedProducts.map(id => productDetails[id]).filter(Boolean);
+        drawRadarChart(products);
+      }
+    };
+    script.onerror = function() {
+      console.error('加载Chart.js库失败');
+      // 显示错误消息
+      const chartContainer = document.getElementById('radarChartContainer');
+      if (chartContainer) {
+        chartContainer.innerHTML = `
+          <div style="padding: 1rem; text-align: center; color: #dc2626;">
+            <p>无法加载图表库。请检查您的网络连接并刷新页面。</p>
+          </div>
+        `;
+      }
+    };
+    document.head.appendChild(script);
+    return false;
+  }
+  return true;
+}
+
+// 在页面加载完成后检查Chart.js库
+document.addEventListener('DOMContentLoaded', function() {
+  ensureChartLibraryLoaded();
+});
+
+
+
+
+
+
+
+// 下载比较内容的函数
+function downloadComparisonContent() {
+  // 获取比较内容
+  const compareContent = document.getElementById('compareContent');
+  if (!compareContent) {
+    alert('未找到比较内容');
+    return;
+  }
+  
+  // 创建一个完整的HTML页面
+  const products = currentComparedProducts.map(id => productDetails[id]).filter(Boolean);
+  const productNames = products.map(p => p.title.split(' ')[0]).join('_vs_');
+  
+  // 创建HTML文档
+  let htmlContent = `
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>产品比较: ${productNames}</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #334155; line-height: 1.6; padding: 2rem; }
+        h2 { color: #2563eb; font-size: 1.5rem; margin-bottom: 1.5rem; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; font-weight: 600; }
+        .summary { background-color: #f0f9ff; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #2563eb; margin-top: 2rem; }
+        .best { background-color: #dcfce7; color: #15803d; }
+        .medium { background-color: #fef9c3; color: #854d0e; }
+        .worst { background-color: #fee2e2; color: #b91c1c; }
+      </style>
+    </head>
+    <body>
+      <h2>产品比较: ${productNames}</h2>
+      ${compareContent.innerHTML}
+      <div style="margin-top: 2rem; text-align: center; color: #64748b; font-size: 0.875rem;">
+        <p>由秒寻-AI驱动的工业元器件选型助手生成</p>
+        <p>生成日期: ${new Date().toLocaleDateString()}</p>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  // 创建Blob对象
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  
+  // 创建下载链接
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `产品比较_${productNames}_${new Date().toISOString().split('T')[0]}.html`;
+  
+  // 触发下载
+  document.body.appendChild(a);
+  a.click();
+  
+  // 清理
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 显示BOM替代品比较表格
+function showBomComparisonTable() {
+  // 使用多个选择器策略，确保能找到右侧容器
+  let rightSideContainer = document.querySelector('.right-side');
+  
+  if (!rightSideContainer) {
+    // 尝试使用更精确的选择器路径
+    rightSideContainer = document.querySelector('#core-features > div:nth-child(2) > div:nth-child(2)');
+    
+    // 再尝试一个更通用的选择器
+    if (!rightSideContainer) {
+      rightSideContainer = document.querySelector('div[style*="flex: 2.5"]');
+      
+      if (!rightSideContainer) {
+        console.error('无法找到右侧容器');
+        alert('无法更新显示区域，请刷新页面后重试');
+        return;
+      }
+    }
+  }
+  
+  // 保存当前状态，以便可以切换回来
+  if (!rightSideContainer.dataset.originalContent) {
+    rightSideContainer.dataset.originalContent = rightSideContainer.innerHTML;
+  }
+  
+  // 强制布局刷新，确保DOM更新
+  rightSideContainer.style.display = 'none';
+  
+  // 延迟执行以确保DOM操作顺序正确
+  setTimeout(() => {
+    // 重新应用布局样式
+    rightSideContainer.style.display = 'flex';
+    rightSideContainer.style.flexDirection = 'column';
+
+
+
+
+
+
+
+
+
+
+  
+  // 创建新的表格标题和内容
+  const newHeaderHTML = `
+      <div style="padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0;">
+        <div>BOM元器件替代方案 (24个元器件)</div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="switchBackToOriginalTable()" style="background-color: transparent; border: none; padding: 0.4rem; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12h18M3 6h18M3 18h18"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 0.8fr 1fr 1fr 0.8fr 0.5fr 1fr; background-color: #f8fafc; padding: 0.8rem 1.2rem; font-weight: 500; color: #000000; border-bottom: 1px solid #e2e8f0; font-size: 12px;">
+        <div style="text-align: left;">原品牌</div>
+        <div style="text-align: left;">原型号</div>
+        <div style="text-align: left;">替代品</div>
+        <div style="text-align: center;">评级</div>
+        <div style="text-align: center;">打分</div>
+        <div style="text-align: left;">制造商</div>
+      </div>
+    `;
+  
+  // 创建表格内容区域
+  let tableBodyHTML = `<div style="flex-grow: 1; overflow-y: auto; font-size: 12px; max-height: calc(100% - 80px);">`;
+  
+  // 生成示例数据行
+  const sampleData = [
+    { originalBrand: 'TI', originalModel: 'LM317T', alternative: 'LM317AT', rating: '替换 DROP IN', score: '0.98', manufacturer: 'ST' },
+    { originalBrand: 'NXP', originalModel: 'BC547B', alternative: '2SC1815GR', rating: '形配 FORM&FIT', score: '0.94', manufacturer: 'Toshiba' },
+    { originalBrand: 'AMD', originalModel: 'AM29F032B-90EC', alternative: 'SST39VF3201-70-4C-EKE', rating: '备选 ALTERNATIVE', score: '0.87', manufacturer: 'Microchip' },
+    { originalBrand: 'TI', originalModel: 'CD4017BE', alternative: 'MC14017BCP', rating: '替换 DROP IN', score: '0.96', manufacturer: 'ON Semi' },
+    { originalBrand: 'STMicro', originalModel: 'STM32F103C8T6', alternative: 'STM32F103C8T6TR', rating: '替换 DROP IN', score: '0.99', manufacturer: 'STMicro' },
+    { originalBrand: 'Vishay', originalModel: 'IRF540N', alternative: 'IRFZ44N', rating: '形配 FORM&FIT', score: '0.92', manufacturer: 'Infineon' },
+    { originalBrand: 'Analog Devices', originalModel: 'AD620ANZ', alternative: 'INA128P', rating: '备选 ALTERNATIVE', score: '0.86', manufacturer: 'TI' },
+    { originalBrand: 'Maxim', originalModel: 'MAX232ACPE+', alternative: 'MAX3232EPE', rating: '形配 FORM&FIT', score: '0.91', manufacturer: 'Maxim' },
+    { originalBrand: 'TI', originalModel: 'TL072CP', alternative: 'NE5532P', rating: '备选 ALTERNATIVE', score: '0.84', manufacturer: 'ON Semi' },
+    { originalBrand: 'ROHM', originalModel: 'BA6418N', alternative: 'LA4440J', rating: '形配 FORM&FIT', score: '0.89', manufacturer: 'Sanyo' },
+    { originalBrand: 'Microchip', originalModel: 'PIC16F877A-I/P', alternative: 'PIC16F877-20I/P', rating: '替换 DROP IN', score: '0.97', manufacturer: 'Microchip' },
+    { originalBrand: 'Samsung', originalModel: 'K4F6E304HB-MGCH', alternative: 'MT52L256M32D1PF-107', rating: '备选 ALTERNATIVE', score: '0.83', manufacturer: 'Micron' },
+    { originalBrand: 'Bosch', originalModel: 'BMP280', alternative: 'BME280', rating: '形配 FORM&FIT', score: '0.93', manufacturer: 'Bosch' },
+    { originalBrand: 'Allegro', originalModel: 'ACS712ELCTR-30A-T', alternative: 'ACS713ELCTR-30A-T', rating: '形配 FORM&FIT', score: '0.90', manufacturer: 'Allegro' },
+    { originalBrand: 'Atmel', originalModel: 'ATMEGA328P-PU', alternative: 'ATMEGA328-PU', rating: '替换 DROP IN', score: '0.95', manufacturer: 'Microchip' },
+    { originalBrand: 'Fairchild', originalModel: '2N7000', alternative: 'BS170', rating: '形配 FORM&FIT', score: '0.88', manufacturer: 'ON Semi' },
+    { originalBrand: 'Siemens', originalModel: 'S7-1200', alternative: 'S7-1215C', rating: '备选 ALTERNATIVE', score: '0.82', manufacturer: 'Siemens' },
+    { originalBrand: 'Mitsubishi', originalModel: 'PS21963-4', alternative: 'PS21964-4', rating: '替换 DROP IN', score: '0.97', manufacturer: 'Mitsubishi' },
+    { originalBrand: 'ABB', originalModel: 'ACS580-01-12A6-4', alternative: 'ACS480-01-12A6-4', rating: '备选 ALTERNATIVE', score: '0.85', manufacturer: 'ABB' },
+    { originalBrand: 'Schneider', originalModel: 'LC1D09BD', alternative: 'LC1D09BL', rating: '形配 FORM&FIT', score: '0.91', manufacturer: 'Schneider' },
+    { originalBrand: 'Omron', originalModel: 'G2R-1-E', alternative: 'MY2N-GS', rating: '备选 ALTERNATIVE', score: '0.84', manufacturer: 'Omron' },
+    { originalBrand: 'Delta', originalModel: 'DVP14SS211R', alternative: 'DVP14SS211T', rating: '替换 DROP IN', score: '0.94', manufacturer: 'Delta' },
+    { originalBrand: 'Phoenix', originalModel: '2866310', alternative: '2866323', rating: '形配 FORM&FIT', score: '0.89', manufacturer: 'Phoenix' },
+    { originalBrand: 'Fuji', originalModel: 'SC-E02/G', alternative: 'SC-E1/G', rating: '备选 ALTERNATIVE', score: '0.81', manufacturer: 'Fuji' }
+  ];
+  
+  // 生成表格行
+    sampleData.forEach((item, index) => {
+      const isEvenRow = index % 2 === 1;
+      const bgColor = isEvenRow ? '#f9fafb' : '';
+      const ratingStyle = item.rating.includes('替换') ? 'background-color: #dcfce7; color: #166534;' : 
+                          item.rating.includes('形配') ? 'background-color: #f0f9ff; color: #0c4a6e;' :
+                          'background-color: #fef3c7; color: #92400e;';
+      
+      tableBodyHTML += `
+        <div class="alternative-highlight" style="display: grid; grid-template-columns: 0.8fr 1fr 1fr 0.8fr 0.5fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: ${bgColor}; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;">
+          <div style="text-align: left;">${item.originalBrand}</div>
+          <div style="text-align: left; font-weight: 500; color: #000000;">${item.originalModel}</div>
+          <div style="text-align: left; font-weight: 500; color: #2563eb;">${item.alternative}</div>
+          <div style="text-align: center;">
+            <span style="padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 11px; ${ratingStyle}">${item.rating}</span>
+          </div>
+          <div style="text-align: center; font-weight: 600; color: #000000;">${item.score}</div>
+          <div style="text-align: left;">${item.manufacturer}</div>
+        </div>
+      `;
+    });
+    
+    tableBodyHTML += `</div>`;
+  
+ // 替换右侧内容，并确保其可见
+    rightSideContainer.innerHTML = newHeaderHTML + tableBodyHTML;
+    rightSideContainer.style.visibility = 'visible';
+    rightSideContainer.style.opacity = '1';
+    
+    // 为新添加的元素添加交互事件
+    addInteractionToAlternativeRows();
+  }, 50);
+}
+
+
+
+
+
+
+// 添加交互事件的辅助函数
+function addInteractionToAlternativeRows() {
+  const alternativeRows = document.querySelectorAll('.alternative-highlight');
+  alternativeRows.forEach(row => {
+    if (!row.dataset.eventAttached) {
+      row.dataset.eventAttached = 'true';
+      
+      row.addEventListener('mouseover', function() {
+        this.style.backgroundColor = '#f1f5f9';
+        this.style.borderLeft = '4px solid #2563eb';
+      });
+      
+      row.addEventListener('mouseout', function() {
+        const index = Array.from(this.parentElement.children).indexOf(this);
+        const isEvenRow = index % 2 === 1;
+        this.style.backgroundColor = isEvenRow ? '#f9fafb' : '';
+        this.style.borderLeft = '0';
+      });
+      
+      row.addEventListener('click', function() {
+        const cells = this.querySelectorAll('div');
+        const originalBrand = cells[0].textContent;
+        const originalModel = cells[1].textContent;
+        const alternative = cells[2].textContent;
+        
+        showComponentDetailPopup(originalBrand, originalModel, alternative);
+      });
+    }
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 文件上传处理
+// 文件上传处理
+document.addEventListener('DOMContentLoaded', function() {
+  // 选择文件上传输入元素
+  const fileUploadInput = document.getElementById('fileUpload');
+  if (!fileUploadInput) return;
+  
+  // 监听文件选择变化事件
+  fileUploadInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // 验证文件类型
+    const validTypes = [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv',
+      'text/plain'
+    ];
+    
+    if (!validTypes.includes(file.type) && 
+        !(file.name.endsWith('.xls') || file.name.endsWith('.xlsx') || file.name.endsWith('.csv') || file.name.endsWith('.txt'))) {
+      alert('请上传有效的BOM文件 (Excel, CSV 或 TXT 格式)');
+      return;
+    }
+    
+
+
+
+
+
+
+
+
+    // 向聊天区域添加上传信息
+   const messagesContainer = document.querySelector('#core-features > div:nth-child(2) > div:first-child > div:first-child');
+    if (messagesContainer) {
+      // 显示用户上传消息
+      const uploadMessageHTML = `
+        <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+          <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
+            <p style="margin: 0;">我上传了一个BOM文件: ${file.name} (${formatFileSize(file.size)})</p>
+          </div>
+          <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+        </div>
+      `;
+      
+      messagesContainer.insertAdjacentHTML('beforeend', uploadMessageHTML);
+      
+      // 显示AI思考状态
+      const thinkingHTML = `
+        <div class="ai-thinking" style="display: flex; margin-bottom: 1rem;">
+          <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+              <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+              <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+              <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+            </svg>
+          </div>
+          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <p style="margin: 0;">正在处理您的BOM文件，查找替代元器件...</p>
+            <div class="typing-indicator" style="display: flex; margin-top: 8px;">
+              <div style="height: 8px; width: 8px; border-radius: 50%; background-color: #2563eb; margin-right: 4px; animation: pulse 1s infinite;"></div>
+              <div style="height: 8px; width: 8px; border-radius: 50%; background-color: #2563eb; margin-right: 4px; animation: pulse 1s infinite 0.2s;"></div>
+              <div style="height: 8px; width: 8px; border-radius: 50%; background-color: #2563eb; animation: pulse 1s infinite 0.4s;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      messagesContainer.insertAdjacentHTML('beforeend', thinkingHTML);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // 延迟2秒后切换右侧区域并更新对话内容
+    setTimeout(() => {
+      // 移除思考状态
+      const thinkingElement = document.querySelector('.ai-thinking');
+      if (thinkingElement) {
+        thinkingElement.remove();
+      }
+      
+      // 添加AI回复
+      if (messagesContainer) {
+        const aiResponseHTML = `
+          <div style="display: flex; margin-bottom: 1rem;">
+            <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+                <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+                <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+                <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+              </svg>
+            </div>
+            <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+              <p style="margin: 0;">我已完成BOM文件分析，共发现24个元器件需要替代方案。右侧已为您列出了具体替代建议，按匹配度排序。您可以点击每行查看详细信息。</p>
+            </div>
+          </div>
+        `;
+        
+        messagesContainer.insertAdjacentHTML('beforeend', aiResponseHTML);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+      
+      // 显示BOM替代品比较表格
+      showBomComparisonTable();
+      
+    }, 2000);
+  });
+});
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+  
+// 文件大小格式化辅助函数
+function formatFileSize(bytes) {
+  if (bytes < 1024) {
+    return bytes + ' B';
+  } else if (bytes < 1024 * 1024) {
+    return (bytes / 1024).toFixed(1) + ' KB';
+  } else {
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+}
+
+// 添加行高亮和点击处理事件
+document.addEventListener('DOMContentLoaded', function() {
+  // 定期检查新添加的元素并添加事件处理
+  setInterval(() => {
+    const alternativeRows = document.querySelectorAll('.alternative-highlight');
+    alternativeRows.forEach(row => {
+      if (!row.dataset.eventAttached) {
+        row.dataset.eventAttached = 'true';
+        
+        row.addEventListener('mouseover', function() {
+          this.style.backgroundColor = '#f1f5f9';
+          this.style.borderLeft = '4px solid #2563eb';
+        });
+        
+        row.addEventListener('mouseout', function() {
+          // 恢复原来的背景色（偶数行和奇数行不同）
+          const index = Array.from(this.parentElement.children).indexOf(this);
+          const isEvenRow = index % 2 === 1;
+          this.style.backgroundColor = isEvenRow ? '#f9fafb' : '';
+          this.style.borderLeft = '0';
+        });
+        
+        row.addEventListener('click', function() {
+          // 获取当前行的元器件信息
+          const cells = this.querySelectorAll('div');
+          const originalBrand = cells[0].textContent;
+          const originalModel = cells[1].textContent;
+          const alternative = cells[2].textContent;
+          
+          // 显示详细信息弹窗
+          showComponentDetailPopup(originalBrand, originalModel, alternative);
+        });
+      }
+    });
+  }, 1000);
+});
+
+
+// 显示元器件详细信息弹窗
+function showComponentDetailPopup(originalBrand, originalModel, alternative) {
+  // 检查是否已存在弹窗，如果存在则先移除
+  const existingPopup = document.getElementById('component-detail-popup');
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+  
+  // 创建弹窗HTML
+  const popupHTML = `
+    <div id="component-detail-popup" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+      <div style="background-color: white; border-radius: 8px; width: 80%; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e2e8f0;">
+          <h3 style="margin: 0; font-size: 18px;">元器件替代详情</h3>
+          <button onclick="document.getElementById('component-detail-popup').remove();" style="background: none; border: none; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div style="padding: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <h4 style="margin-top: 0; color: #64748b;">原始元器件</h4>
+              <div style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <div style="margin-bottom: 0.5rem;">
+                  <span style="font-weight: 500; color: #64748b;">品牌:</span>
+                  <span>${originalBrand}</span>
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                  <span style="font-weight: 500; color: #64748b;">型号:</span>
+                  <span style="font-weight: 500;">${originalModel}</span>
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                  <span style="font-weight: 500; color: #64748b;">库存状态:</span>
+                  <span style="color: #ef4444;">缺货</span>
+                </div>
+                <div>
+                  <span style="font-weight: 500; color: #64748b;">市场价格:</span>
+                  <span>$4.86</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 style="margin-top: 0; color: #64748b;">替代元器件</h4>
+              <div style="padding: 1rem; border: 1px solid #2563eb; border-radius: 8px; background-color: #f0f7ff;">
+                <div style="margin-bottom: 0.5rem;">
+                  <span style="font-weight: 500; color: #64748b;">替代型号:</span>
+                  <span style="font-weight: 500; color: #2563eb;">${alternative}</span>
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                  <span style="font-weight: 500; color: #64748b;">库存状态:</span>
+                  <span style="color: #10b981;">现货</span>
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                  <span style="font-weight: 500; color: #64748b;">市场价格:</span>
+                  <span>$4.22</span>
+                </div>
+                <div>
+                  <span style="font-weight: 500; color: #64748b;">制造商:</span>
+                  <span>ST Microelectronics</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <h4 style="color: #64748b;">参数对比</h4>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="background-color: #f8fafc; text-align: left;">
+                  <th style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">参数</th>
+                  <th style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">原始元器件</th>
+                  <th style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">替代元器件</th>
+                  <th style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">差异</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">工作温度</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">-40°C ~ 125°C</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">-40°C ~ 125°C</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0; color: #10b981;">相同</td>
+                </tr>
+                <tr style="background-color: #f8fafc;">
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">电压范围</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">1.2V ~ 37V</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">1.2V ~ 37V</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0; color: #10b981;">相同</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">最大电流</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">1.5A</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">1.5A</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0; color: #10b981;">相同</td>
+                </tr>
+                <tr style="background-color: #f8fafc;">
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">封装类型</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">TO-220</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">TO-220</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0; color: #10b981;">相同</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">调节精度</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">±2%</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">±1%</td>
+                  <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0; color: #10b981;">更优</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 完整数据表信息 -->
+          <h4 style="color: #64748b; margin-top: 1.5rem;">完整数据表信息</h4>
+          <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; font-size: 14px; margin-bottom: 1.5rem;">
+            <div style="margin-bottom: 0.75rem;">
+              <h5 style="margin: 0.5rem 0; color: #334155;">电气特性</h5>
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <tr>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0; width: 40%;">输出电压范围</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">1.2V ~ 37V</td>
+                </tr>
+                <tr style="background-color: #fff;">
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">调整率(线性)</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">0.01%/V (典型值)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">调整率(负载)</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">0.1%/A (典型值)</td>
+                </tr>
+                <tr style="background-color: #fff;">
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">静态电流</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">5mA (最大值)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">温度稳定性</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">±0.01%/°C</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="margin-bottom: 0.75rem;">
+              <h5 style="margin: 0.5rem 0; color: #334155;">热特性</h5>
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <tr>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0; width: 40%;">热阻 JA</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">65°C/W</td>
+                </tr>
+                <tr style="background-color: #fff;">
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">热阻 JC</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">5°C/W</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">操作温度范围</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">-40°C ~ 125°C</td>
+                </tr>
+                <tr style="background-color: #fff;">
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">最大结温</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">150°C</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div>
+              <h5 style="margin: 0.5rem 0; color: #334155;">安规与认证</h5>
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <tr>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0; width: 40%;">RoHS合规</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">是</td>
+                </tr>
+                <tr style="background-color: #fff;">
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">无铅状态</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">无铅</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">MSL等级</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">MSL 1</td>
+                </tr>
+                <tr style="background-color: #fff;">
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">REACH合规</td>
+                  <td style="padding: 0.5rem; border-bottom: 1px solid #e2e8f0;">是</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          
+          <div style="margin-top: 1.5rem; display: flex; justify-content: space-between;">
+            <button onclick="document.getElementById('component-detail-popup').remove();" style="padding: 0.75rem 1.5rem; background-color: #fff; color: #2563eb; border: 1px solid #2563eb; border-radius: 0.375rem; cursor: pointer; font-weight: 500;">关闭</button>
+            <button onclick="downloadComponentComparison('${originalBrand}', '${originalModel}', '${alternative}')" style="padding: 0.75rem 1.5rem; background-color: #2563eb; color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 500;">下载</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', popupHTML);
+}
+
+// 下载元件比较信息函数
+function downloadComponentComparison(originalBrand, originalModel, alternative) {
+  // 获取弹窗内容
+  const popupContent = document.getElementById('component-detail-popup').querySelector('div > div');
+  if (!popupContent) {
+    alert('无法获取元件比较信息');
+    return;
+  }
+  
+  // 创建完整HTML文档
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>元器件替代方案比较: ${originalModel} vs ${alternative}</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #334155; }
+        h1 { color: #2563eb; font-size: 24px; margin-bottom: 20px; }
+        h2 { color: #334155; font-size: 20px; margin-bottom: 15px; }
+        h3 { color: #334155; font-size: 18px; margin-bottom: 10px; }
+        h4 { color: #64748b; font-size: 16px; margin-top: 20px; margin-bottom: 10px; }
+        h5 { color: #334155; font-size: 14px; margin: 10px 0; }
+        .header { margin-bottom: 30px; text-align: center; }
+        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #64748b; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background-color: #f8fafc; padding: 10px; text-align: left; font-weight: bold; border: 1px solid #e2e8f0; }
+        td { padding: 10px; border: 1px solid #e2e8f0; }
+        tr:nth-child(even) { background-color: #f9fafb; }
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .original-component { padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .alternative-component { padding: 15px; border: 1px solid #2563eb; border-radius: 8px; background-color: #f0f7ff; }
+        .parameter-section { background-color: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .same { color: #10b981; }
+        .better { color: #10b981; font-weight: bold; }
+        .worse { color: #ef4444; }
+        .section { margin-bottom: 25px; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>元器件替代方案比较报告</h1>
+        <h2>${originalModel} vs ${alternative}</h2>
+        <p>生成时间: ${new Date().toLocaleString()}</p>
+      </div>
+      
+      <div class="section">
+        <h3>元器件基本信息</h3>
+        <div class="comparison-grid">
+          <div class="original-component">
+            <h4>原始元器件</h4>
+            <table>
+              <tr><td style="font-weight: 500; width: 30%;">品牌</td><td>${originalBrand}</td></tr>
+              <tr><td style="font-weight: 500;">型号</td><td>${originalModel}</td></tr>
+              <tr><td style="font-weight: 500;">库存状态</td><td style="color: #ef4444;">缺货</td></tr>
+              <tr><td style="font-weight: 500;">市场价格</td><td>$4.86</td></tr>
+            </table>
+          </div>
+          <div class="alternative-component">
+            <h4>替代元器件</h4>
+            <table>
+              <tr><td style="font-weight: 500; width: 30%;">替代型号</td><td>${alternative}</td></tr>
+              <tr><td style="font-weight: 500;">库存状态</td><td style="color: #10b981;">现货</td></tr>
+              <tr><td style="font-weight: 500;">市场价格</td><td>$4.22</td></tr>
+              <tr><td style="font-weight: 500;">制造商</td><td>ST Microelectronics</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>参数对比</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>参数</th>
+              <th>原始元器件</th>
+              <th>替代元器件</th>
+              <th>差异</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>工作温度</td>
+              <td>-40°C ~ 125°C</td>
+              <td>-40°C ~ 125°C</td>
+              <td class="same">相同</td>
+            </tr>
+            <tr>
+              <td>电压范围</td>
+              <td>1.2V ~ 37V</td>
+              <td>1.2V ~ 37V</td>
+              <td class="same">相同</td>
+            </tr>
+            <tr>
+              <td>最大电流</td>
+              <td>1.5A</td>
+              <td>1.5A</td>
+              <td class="same">相同</td>
+            </tr>
+            <tr>
+              <td>封装类型</td>
+              <td>TO-220</td>
+              <td>TO-220</td>
+              <td class="same">相同</td>
+            </tr>
+            <tr>
+              <td>调节精度</td>
+              <td>±2%</td>
+              <td>±1%</td>
+              <td class="better">更优</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="section">
+        <h3>完整数据表信息</h3>
+        
+        <div class="parameter-section">
+          <h4>电气特性</h4>
+          <table>
+            <tr>
+              <td style="width: 40%;">输出电压范围</td>
+              <td>1.2V ~ 37V</td>
+            </tr>
+            <tr>
+              <td>调整率(线性)</td>
+              <td>0.01%/V (典型值)</td>
+            </tr>
+            <tr>
+              <td>调整率(负载)</td>
+              <td>0.1%/A (典型值)</td>
+            </tr>
+            <tr>
+              <td>静态电流</td>
+              <td>5mA (最大值)</td>
+            </tr>
+            <tr>
+              <td>温度稳定性</td>
+              <td>±0.01%/°C</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div class="parameter-section">
+          <h4>热特性</h4>
+          <table>
+            <tr>
+              <td style="width: 40%;">热阻 JA</td>
+              <td>65°C/W</td>
+            </tr>
+            <tr>
+              <td>热阻 JC</td>
+              <td>5°C/W</td>
+            </tr>
+            <tr>
+              <td>操作温度范围</td>
+              <td>-40°C ~ 125°C</td>
+            </tr>
+            <tr>
+              <td>最大结温</td>
+              <td>150°C</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div class="parameter-section">
+          <h4>安规与认证</h4>
+          <table>
+            <tr>
+              <td style="width: 40%;">RoHS合规</td>
+              <td>是</td>
+            </tr>
+            <tr>
+              <td>无铅状态</td>
+              <td>无铅</td>
+            </tr>
+            <tr>
+              <td>MSL等级</td>
+              <td>MSL 1</td>
+            </tr>
+            <tr>
+              <td>REACH合规</td>
+              <td>是</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      
+      <div class="footer">
+        <p>此报告仅供参考，最终替换决策应参考完整数据表及在实际应用中的测试结果。</p>
+        <p>© ${new Date().getFullYear()} 电子元器件替代方案分析系统</p>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  // 创建Blob对象
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  
+  // 创建下载链接
+  const downloadLink = document.createElement('a');
+  downloadLink.href = URL.createObjectURL(blob);
+  downloadLink.download = `${originalModel}_vs_${alternative}_比较报告.html`;
+  
+  // 触发下载
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  
+  // 清理
+  document.body.removeChild(downloadLink);
+  URL.revokeObjectURL(downloadLink.href);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 绑定回形针按钮点击事件
+const clipButton = document.getElementById('fileUploadButton');
+if (clipButton) {
+  clipButton.addEventListener('click', function(event) {
+    // 手动触发文件选择
+    document.getElementById('fileUpload').click();
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
 
 </body>
 
