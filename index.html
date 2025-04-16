@@ -812,6 +812,85 @@ button[onclick="document.getElementById('fileUpload').click();"]:hover {
 
 
 
+
+/* 主布局容器 */
+.chat-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* 防止溢出引起的布局问题 */
+}
+
+/* 左侧面板 - 强制固定宽度 */
+.left-side {
+  width: 320px !important; /* 使用!important确保优先级 */
+  min-width: 320px !important;
+  max-width: 320px !important;
+  flex: none !important; /* 防止flex布局影响宽度 */
+  overflow-x: hidden;
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* 右侧面板 - 占据剩余空间 */
+.right-side {
+  flex: 1 !important;
+  min-width: 0; /* 允许flex-grow正常工作 */
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* 客户列表容器 */
+.customer-list {
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 客户项 */
+.customer-item {
+  width: 100%;
+  box-sizing: border-box; /* 确保padding和border计入宽度 */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 修改问题跟进页面的HTML结构和样式 -->
+<style>
+/* 确保问题跟进页面在切换时正确显示/隐藏 */
+#follow-up-content {
+  display: none; /* 默认隐藏 */
+}
+
+/* 销售工作台头部在问题跟进页面时应隐藏 */
+#follow-up-mode .sales-workstation-header {
+  display: none;
+}
 </style>
 
 
@@ -819,6 +898,101 @@ button[onclick="document.getElementById('fileUpload').click();"]:hover {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 客户档案模态框的CSS样式 -->
+<style>
+  .profile-panel {
+    display: none;
+  }
+  
+  .profile-tab.active {
+    color: #2563eb;
+    border-bottom: 2px solid #2563eb;
+  }
+  
+  /* 增加一些响应式处理 */
+  @media (max-width: 768px) {
+    #customerProfileModal > div {
+      width: 95%;
+      margin: 1rem auto;
+    }
+    
+    .profile-tab {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+    }
+  }
+  
+  /* 美化滚动条 */
+  #customerProfileModal::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  #customerProfileModal::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  #customerProfileModal::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  
+  #customerProfileModal::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
+  /* 表格悬停效果 */
+  table tbody tr:hover {
+    background-color: #f8fafc;
+  }
+  
+  /* 按钮悬停效果 */
+  button:hover {
+    opacity: 0.9;
+  }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</style>
 </head>
 
 <body>
@@ -2029,6 +2203,26 @@ button[onclick="document.getElementById('fileUpload').click();"]:hover {
 
 
 
+<!-- 功能内容区域 -->
+
+<div class="feature-content">
+
+
+<!-- 功能选项卡导航 -->
+
+<div style="background-color: #f0f7ff; border-radius: 12px; padding: 1rem 2rem 0.5rem 2rem; margin: 3rem 0 0 0;">  
+<div style="display: flex; gap: 1rem; align-items: center;">
+
+
+    <button class="feature-tab active" data-tab="single-query" style="background-color: #2563eb; color: white; border: none; border-radius: 6px; padding: 0.75rem 1.5rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; min-width: 120px; text-align: center;">
+
+
+      查询页面
+    </button>
+
+
+  </div>
+</div>
 
 
 
@@ -2051,6 +2245,14 @@ button[onclick="document.getElementById('fileUpload').click();"]:hover {
 
 
 
+<!-- 功能内容面板容器 -->
+<div id="feature-content-container" style="margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;">
+
+
+<!-- 单件查询内容面板 -->
+<div id="single-query-content" class="feature-content-panel active">
+
+<div id="constraint-query-content" class="demo-content" style="display: block;">
 
 
 
@@ -2061,21 +2263,245 @@ button[onclick="document.getElementById('fileUpload').click();"]:hover {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<!-- 约束条件查询功能演示 -->
+<div id="core-features" style="background-color: #f0f7ff; border-radius: 12px; padding: 2rem; margin: 3rem 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
   
+
+<!-- 功能标题区 -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    
+<div style="display: flex; flex-direction: column; gap: 0.6rem;">
+  <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;">自然语言对话</h2>
+  <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+    <span style="color: #666; font-size: 0.9rem; padding-left: 0.5rem; border-left: 3px solid #2563eb;">约束条件查询</span>
+    <span style="color: #666; font-size: 0.9rem; padding-left: 0.5rem; border-left: 3px solid #2563eb;">精确型号查询</span>
+    <span style="color: #666; font-size: 0.9rem; padding-left: 0.5rem; border-left: 3px solid #2563eb;">替代产品查询</span>
+  </div>
+</div>
+
+
+
+ <!-- 功能按钮区 -->
+    <div style="display: flex; gap: 0.8rem;">
+      <button style="background-color: #2563eb; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        比较
+      </button>
+
+
+
+
+
+
+<button onclick="downloadSearchResults()" style="background-color: #2563eb; color: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+  下载
+</button>
+
+
+
+
+      <button style="background-color: white; color: #2563eb; border: none; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        咨询
+      </button>
+
+
+
+
+      <button style="background-color: white; color: #2563eb; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+          <polyline points="16 6 12 2 8 6"></polyline>
+          <line x1="12" y1="2" x2="12" y2="15"></line>
+        </svg>
+        分享
+      </button>
+      
+
+
+
+
+    </div>
+</div>
+ 
+
+
+
+
+
+<!-- 主体内容区：聊天窗口和结果展示 -->
+ <div style="display: flex; gap: 2rem; height: 600px;">
+
+
+
+
+
+
+<!-- 左侧聊天窗口 -->
+  <div style="flex: 1; background-color: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+  <!-- 聊天消息区域 -->
+  <div style="flex-grow: 1; overflow-y: auto; margin-bottom: 1rem;">
+    <!-- 用户初始消息 -->
+    <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+      <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
+        <p style="margin: 0;">我需要查找一款适合高精度定位控制系统的伺服电机，大约2kW功率左右，转速要达到3000rpm，您能帮我找到合适的产品吗？</p>
+
+<div style="margin-top: 6px;">
+  <button style="color: #1976d2;">复制</button>
+  <button style="color: #1976d2;">删除</button>
+</div>
+
+      </div>
+      
+
+
+<div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+</div>
+    </div>
+
+    <!-- AI回复询问更多细节 -->
+    <div style="display: flex; margin-bottom: 1rem;">
+      <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+          <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+          <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+          <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+        </svg>
+      </div>
+      <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <p style="margin-top: 0; margin-bottom: 0.5rem;">我可以帮您查找合适的伺服电机。为了提供更准确的结果，请问：</p>
+        <ul style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
+          <li>您对电机扭矩有具体要求吗？根据功率和转速计算，约需6.4Nm左右</li>
+          <li>需要特定的通信协议吗？例如EtherCAT、PROFINET等</li>
+          <li>对电机的反馈精度有特殊要求吗？</li>
+        </ul>
+
+
+<div style="margin-top: 6px;">
+  <button style="color: #1976d2;">复制</button>
+  <button style="color: #1976d2;">删除</button>
+</div>
+
+
+
+
+      </div>
+    </div>
+
+    <!-- 用户回复更多细节 -->
+    <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+      <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
+        <p style="margin: 0;">扭矩需求是6.37Nm左右，通信协议必须支持EtherCAT，这是为了配合现有的控制系统。因为是用于高精度定位控制，所以精度越高越好。</p>
+
+
+<div style="margin-top: 6px;">
+  <button style="color: #1976d2;">复制</button>
+  <button style="color: #1976d2;">删除</button>
+</div>
+
+      </div>
+      <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+    </div>
+
+    <!-- AI确认条件 -->
+    <div style="display: flex; margin-bottom: 1rem;">
+      <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+          <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+          <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+          <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+        </svg>
+      </div>
+      <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <p style="margin-top: 0; margin-bottom: 0.5rem;">我将基于您提供的约束条件查找合适的伺服电机产品：</p>
+        <ul style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
+          <li>额定功率: 2kW</li>
+          <li>额定转速: 3000rpm</li>
+          <li>额定扭矩: 6.37Nm</li>
+          <li>通信协议: EtherCAT</li>
+          <li>应用场景: 高精度定位控制系统</li>
+        </ul>
+        <p style="margin-bottom: 0;">我是否理解正确？如需调整，请直接修改条件。</p>
+
+
+<div style="margin-top: 6px;">
+  <button style="color: #1976d2;">复制</button>
+  <button style="color: #1976d2;">删除</button>
+</div>
+
+
+      </div>
+    </div>
+    
+    <!-- 用户消息 -->
+    <div style="display: flex; margin-bottom: 1rem; justify-content: flex-end;">
+      <div style="background-color: #eef2ff; padding: 1rem; border-radius: 8px; max-width: 80%;">
+        <p style="margin: 0;">是的，条件正确，请帮我查找合适的产品。我希望电机的精度越高越好。</p>
+
+
+<div style="margin-top: 6px;">
+  <button style="color: #1976d2;">复制</button>
+  <button style="color: #1976d2;">删除</button>
+</div>
+
+
+      </div>
+      <div style="width: 36px; height: 36px; background-color: #e2e8f0; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 0.8rem; flex-shrink: 0; color: #334155;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+    </div>
+    
+    <!-- AI回复查询结果 -->
+    <div style="display: flex; margin-bottom: 1rem;">
+      <div style="width: 36px; height: 36px; background-color: #2563eb; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 0.8rem; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l5.09 5.09L12 12.18l-5.09-5.09L12 2z"></path>
+          <path d="M12 12.18l5.09 5.09L12 22.36l-5.09-5.09L12 12.18z"></path>
+          <path d="M2 12l5.09-5.09L12 12l-4.91 5.09L2 12z"></path>
+          <path d="M22 12l-5.09-5.09L12 12l4.91 5.09L22 12z"></path>
+        </svg>
+      </div>
+      <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <p style="margin-top: 0; margin-bottom: 0.5rem;">我已为您找到符合条件的高精度伺服电机型号。您可以在右侧查看详细比较表格。</p>  
+
+
+
+<div style="margin-top: 6px;">
+  <button style="color: #1976d2;">复制</button>
+  <button style="color: #1976d2;">删除</button>
+</div>
+
+      
+      </div>
+    </div>
+  </div>
   
 
 
@@ -2083,6 +2509,132 @@ button[onclick="document.getElementById('fileUpload').click();"]:hover {
 
 
 
+    
+  <!-- 消息输入框 -->
+  <div style="display: flex; align-items: center; margin-top: 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+    <input type="text" placeholder="输入信息..." style="flex-grow: 1; padding: 0.8rem 0.4rem; border: none; outline: none;">
+      
+
+
+
+
+
+<!-- 回形针文件上传按钮 -->
+<button id="fileUploadButton" style="background-color: transparent; color: #64748b; border: none; padding: 0.4rem; display: flex; align-items: center; cursor: pointer; transition: color 0.2s ease;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"></path>
+  </svg>
+</button>
+
+
+
+
+
+
+<!-- 发送按钮 -->
+    <button style="background-color: #2563eb; color: white; border: none; padding: 0.8rem 0.4rem; display: flex; align-items: center; cursor: pointer;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+
+
+
+
+
+
+<!-- New Charts 按钮 -->
+<button style="background-color: #64748b; color: white; border: none; padding: 0.8rem 0.4rem; display: flex; align-items: center; cursor: pointer;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <polyline points="7 14 10 11 13 16 17 10"></polyline>
+    <line x1="7" y1="10" x2="7" y2="14"></line>
+  </svg>
+</button>
+
+
+
+
+
+<!-- History 按钮 -->
+<button style="background-color: #64748b; color: white; border: none; padding: 0.8rem 0.4rem; display: flex; align-items: center; cursor: pointer;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </svg>
+</button>
+
+
+
+
+  </div>
+</div>
+
+
+
+
+      
+
+
+<!-- 添加隐藏的文件上传输入框 -->
+<input type="file" id="fileUpload" accept=".csv,.xlsx,.xls" style="display: none;">
+
+
+
+     
+
+
+
+
+
+
+
+
+
+
+    <!-- 右侧结果展示区域 -->
+<div style="flex: 2.5; background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 100%;">
+
+
+<!-- 搜索结果统计 -->
+      <div style="padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0;">
+        <div>10 产品已找到</div>
+        <div>
+
+<button style="background-color: transparent; border: none; padding: 0.4rem; cursor: pointer;" title="下载">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+</button>
+
+
+<button style="background-color: transparent; border: none; padding: 0.4rem; cursor: pointer;" title="右缩进">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+    <!-- 竖线表示左侧边界 -->
+    <line x1="4" y1="4" x2="4" y2="20" />
+    <!-- 右箭头 -->
+    <polyline points="8,8 16,12 8,16" />
+  </svg>
+</button>
+
+
+        </div>
+      </div>
+      
+      <!-- 表格头部 - 固定在顶部 -->
+<div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; background-color: #f8fafc; padding: 0.8rem 1.2rem; font-weight: 500; color: #000000; border-bottom: 1px solid #e2e8f0; font-size: 12px;">
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <input type="checkbox" class="select-all-checkbox" style="width: 16px; height: 16px;">
+  </div>
+  <div style="text-align: left;">型号</div>
+  <div style="text-align: center;">评级</div>
+  <div style="text-align: center;">打分</div>
+  <div style="text-align: left;">描述</div>
+  <div style="text-align: left;">制造商</div>
+</div>
 
 
 
@@ -2097,26 +2649,263 @@ button[onclick="document.getElementById('fileUpload').click();"]:hover {
 
 
 
+<!-- 表格内容区域 - 可滚动 -->
+<div style="flex-grow: 1; overflow-y: auto; font-size: 12px; max-height: calc(100% - 80px);">
+  <!-- 表格行 - 第一行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('MR-J5-20G')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">MR-J5-20G</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">替换 DROP IN</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.98</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW AC伺服电机，23bit高精度编码器，支持EtherCAT通信，额定扭矩6.7Nm，最高转速3000rpm</div>
+    <div style="text-align: left;">三菱电机</div>
+  </div>
+
+  <!-- 表格行 - 第二行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('R88M-1M20030H-S2')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">R88M-1M20030H-S2</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">形配 FORM&FIT</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.95</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW伺服电机，20bit高分辨率编码器，支持EtherCAT协议，额定扭矩6.37Nm，适用于精密定位控制</div>
+    <div style="text-align: left;">欧姆龙</div>
+  </div>
+
+  <!-- 表格行 - 第三行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('SBM-02VBD1-E')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">SBM-02VBD1-E</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.87</span>
+      </div>
+    </div>
+    <div style="text-align: left;">2.0kW伺服电机，支持EtherCAT通信协议，额定扭矩6.4Nm，最高转速3000rpm，适合高精度定位系统</div>
+    <div style="text-align: left;">安川电机</div>
+  </div>
+
+
+
+  <!-- 表格行 - 第四行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('AKM22G-ACCNC-02')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">AKM22G-ACCNC-02</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.80</span>
+      </div>
+    </div>
+    <div style="text-align: left;">
+      <div style="margin-bottom: 4px; font-weight: 500;">额定功率: 2.0kW</div>
+      <div style="margin-bottom: 4px;">额定扭矩: 6.6Nm</div>
+      <div style="margin-bottom: 4px;">编码器: 24bit高精度</div>
+      <div style="margin-bottom: 4px;">通信: EtherCAT总线</div>
+      <div>定位精度: ±0.001°</div>
+    </div>
+    <div style="text-align: left;">科尔摩根</div>
+  </div>
+
+  <!-- 表格行 - 第五行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('MS2N07-XXXXX')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">MS2N07-XXXXX</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.73</span>
+      </div>
+    </div>
+    <div style="text-align: left;">
+      <div style="margin-bottom: 4px; font-weight: 500;">额定功率: 2.1kW</div>
+      <div style="margin-bottom: 4px;">额定扭矩: 6.7Nm</div>
+      <div style="margin-bottom: 4px;">电机类型: 同步伺服电机</div>
+      <div style="margin-bottom: 4px;">通信: EtherCAT总线</div>
+      <div>转速范围: 0-3000rpm</div>
+    </div>
+    <div style="text-align: left;">博世力士乐</div>
+  </div>
+
+  <!-- 表格行 - 第六行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('SGM7G-20A')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">SGM7G-20A</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.71</span>
+      </div>
+    </div>
+    <div style="text-align: left;">
+      <div style="margin-bottom: 4px; font-weight: 500;">额定功率: 2.0kW</div>
+      <div style="margin-bottom: 4px;">额定扭矩: 6.37Nm</div>
+      <div style="margin-bottom: 4px;">编码器: 23bit高分辨率</div>
+      <div style="margin-bottom: 4px;">通信: EtherCAT</div>
+      <div>最高转速: 2000rpm</div>
+    </div>
+    <div style="text-align: left;">安川电机</div>
+  </div>
+
+  <!-- 表格行 - 第七行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('1FK7063-5AF71')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">1FK7063-5AF71</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.69</span>
+      </div>
+    </div>
+    <div style="text-align: left;">
+      <div style="margin-bottom: 4px; font-weight: 500;">额定功率: 2.0kW</div>
+      <div style="margin-bottom: 4px;">额定扭矩: 6.4Nm</div>
+      <div style="margin-bottom: 4px;">电机类型: 伺服电机</div>
+      <div style="margin-bottom: 4px;">通信: PROFINET总线</div>
+      <div>转速范围: 0-3000rpm</div>
+    </div>
+    <div style="text-align: left;">西门子</div>
+  </div>
+
+  <!-- 表格行 - 第八行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('MHMD022G1U')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">MHMD022G1U</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.68</span>
+      </div>
+    </div>
+    <div style="text-align: left;">
+      <div style="margin-bottom: 4px; font-weight: 500;">额定功率: 2.0kW</div>
+      <div style="margin-bottom: 4px;">额定扭矩: 6.5Nm</div>
+      <div style="margin-bottom: 4px;">编码器: 20bit增量式</div>
+      <div style="margin-bottom: 4px;">通信: EtherCAT</div>
+      <div>最高转速: 3000rpm</div>
+    </div>
+    <div style="text-align: left;">松下电器</div>
+  </div>
+
+  <!-- 表格行 - 第九行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('CMP80S/BP/KY/AZ')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">CMP80S/BP/KY/AZ</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.65</span>
+      </div>
+    </div>
+    <div style="text-align: left;">
+      <div style="margin-bottom: 4px; font-weight: 500;">额定功率: 2.2kW</div>
+      <div style="margin-bottom: 4px;">额定扭矩: 6.8Nm</div>
+      <div style="margin-bottom: 4px;">电机类型: 永磁同步伺服</div>
+      <div style="margin-bottom: 4px;">通信: 多种总线协议</div>
+      <div>转速范围: 0-3500rpm</div>
+    </div>
+    <div style="text-align: left;">SEW</div>
+  </div>
+
+  <!-- 表格行 - 第十行 -->
+  <div style="display: grid; grid-template-columns: 40px 1fr 1fr 1fr 2fr 1fr; padding: 1rem 1.2rem; border-bottom: 1px solid #e2e8f0; align-items: center; background-color: #f9fafb; transition: background-color 0.2s ease, border-left 0.2s ease; cursor: pointer;" onclick="showProductDetail('AKMH-22C-ABC-2E')">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <input type="checkbox" class="row-checkbox" style="width: 16px; height: 16px;">
+    </div>
+    <div style="text-align: left; font-weight: 500; color: #000000;">AKMH-22C-ABC-2E</div>
+    <div style="font-weight: 500; color: #000000; text-align: center;">备选 ALTERNATIVE</div>
+    <div style="text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <span style="font-weight: 600; color: #000000;">0.62</span>
+      </div>
+    </div>
+    <div style="text-align: left;">
+      <div style="margin-bottom: 4px; font-weight: 500;">额定功率: 2.0kW</div>
+      <div style="margin-bottom: 4px;">额定扭矩: 6.5Nm</div>
+      <div style="margin-bottom: 4px;">防护等级: IP67食品级</div>
+      <div style="margin-bottom: 4px;">通信: EtherCAT</div>
+      <div>应用场景: 高卫生要求场合</div>
+    </div>
+    <div style="text-align: left;">科尔摩根</div>
+  </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 产品详情模态框 -->
+<div id="productDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+  <div style="background-color: white; border-radius: 8px; width: 80%; max-width: 900px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; position: relative;">
+    <button onclick="closeProductDetail()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">×</button>
+    
+    <div id="productDetailContent">
+      <!-- 内容将通过JavaScript动态填充 -->
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; gap: 1rem;">
+      <button onclick="closeProductDetail()" style="padding: 0.5rem 1rem; background-color: #e5e7eb; border: none; border-radius: 6px; cursor: pointer;">关闭</button>
+      
+      <button onclick="downloadProductDetail('${modelId}')" style="padding: 0.5rem 1rem; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer;">下载</button>
+    </div>
+  </div>
+</div>
 
 
 
 
 
+<!-- 添加比较视图模态框 -->
+<div id="compareModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+  <div style="background-color: white; border-radius: 8px; width: 90%; max-width: 1000px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; position: relative;">
+    <button onclick="closeCompareView()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">×</button>
+    
+    <h2 style="margin-bottom: 1rem; color: #2563eb; font-size: 1.25rem;">产品比较</h2>
+    
+    <div id="compareContent">
+      <!-- 内容将通过JavaScript动态填充 -->
+    </div>
+    
+    <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; gap: 1rem;">
+      <button onclick="closeCompareView()" style="padding: 0.5rem 1rem; background-color: #e5e7eb; border: none; border-radius: 6px; cursor: pointer;">关闭</button>
+      <button onclick="downloadComparisonContent()" style="padding: 0.5rem 1rem; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer;">下载</button>
+    </div>
+  </div>
 
 
+</div>
+</div>
+</div>
+</div>
 
-
-
-
-
-
-
-
-
-
-
-   
-              
 
 
 
@@ -4595,11 +5384,30 @@ function showBomComparisonTable() {
       <div style="padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0;">
         <div>BOM元器件替代方案 (24个元器件)</div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <button onclick="switchBackToOriginalTable()" style="background-color: transparent; border: none; padding: 0.4rem; cursor: pointer;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12h18M3 6h18M3 18h18"></path>
-            </svg>
-          </button>
+
+
+
+          <button style="background-color: transparent; border: none; padding: 0.4rem; cursor: pointer;" title="下载">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+<polyline points="7 10 12 15 17 10"></polyline>
+<line x1="12" y1="15" x2="12" y2="3"></line>
+</svg>
+</button>
+
+
+
+<button style="background-color: transparent; border: none; padding: 0.4rem; cursor: pointer;" title="右缩进">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+    <!-- 竖线表示左侧边界 -->
+    <line x1="4" y1="4" x2="4" y2="20" />
+    <!-- 右箭头 -->
+    <polyline points="8,8 16,12 8,16" />
+  </svg>
+</button>
+
+
+
         </div>
       </div>
       
@@ -5444,6 +6252,671 @@ if (clipButton) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!----功能演示选项卡----->
+
+document.addEventListener('DOMContentLoaded', function() {
+  
+// 获取所有选项卡按钮和内容面板
+  const tabButtons = document.querySelectorAll('.feature-tab');
+  const contentPanels = document.querySelectorAll('.feature-content-panel');
+  
+  // 为每个选项卡按钮添加点击事件
+  tabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+
+      // 获取要显示的面板ID
+      const targetTab = this.getAttribute('data-tab');
+      
+
+      // 移除所有按钮的active类
+      tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.backgroundColor = 'white';
+        btn.style.color = '#2563eb';
+btn.style.border = '1px solid #e2e8f0';
+      });
+      
+
+      // 隐藏所有内容面板
+      contentPanels.forEach(panel => {
+        panel.classList.remove('active');
+        panel.style.display = 'none';
+      });
+      
+
+      // 激活当前点击的按钮
+      this.classList.add('active');
+      this.style.backgroundColor = '#2563eb';
+      this.style.color = 'white';
+this.style.border = 'none';
+
+      
+      // 显示对应的内容面板
+      const activePanel = document.getElementById(`${targetTab}-content`);
+      if (activePanel) {
+        activePanel.classList.add('active');
+        activePanel.style.display = 'block';
+      }
+    });
+  });
+
+  
+
+
+
+  // 正确初始化显示状态
+  // 确保只有第一个选项卡激活并显示对应内容，其他所有选项卡内容都隐藏
+  tabButtons.forEach((button, index) => {
+    if (index === 0) {
+      button.classList.add('active');
+      button.style.backgroundColor = '#2563eb';
+      button.style.color = 'white';
+    } else {
+      button.classList.remove('active');
+      button.style.backgroundColor = 'white';
+      button.style.color = '#2563eb';
+    }
+  });
+  
+  contentPanels.forEach((panel, index) => {
+    if (index === 0) {
+      panel.classList.add('active');
+      panel.style.display = 'block';
+    } else {
+      panel.classList.remove('active');
+      panel.style.display = 'none';
+    }
+  });
+});
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!----单件查询-”下载“功能----->
+
+function downloadSearchResults() {
+  // 尝试多种选择器策略找到结果容器
+  let resultsContainer = document.querySelector('#core-features > div:nth-child(2) > div:nth-child(2)');
+  
+  if (!resultsContainer) {
+    // 尝试基于样式特征的选择器
+    resultsContainer = document.querySelector('div[style*="flex: 2.5"]');
+  }
+  
+  if (!resultsContainer) {
+    // 再尝试类名选择器
+    resultsContainer = document.querySelector('.right-side');
+  }
+  
+  if (!resultsContainer) {
+    // 最后尝试查找表格结构特征
+    resultsContainer = document.querySelector('div[style*="display: flex; flex-direction: column; height: 100%"]');
+  }
+  
+  if (!resultsContainer) {
+    alert('无法找到搜索结果区域，请联系技术支持');
+    console.error('无法找到搜索结果容器，所有选择器均失败');
+    return;
+  }
+  
+  // 获取结果数量信息
+  const resultCountElement = resultsContainer.querySelector('div:first-child');
+  const resultCount = resultCountElement ? resultCountElement.textContent.trim() : '搜索结果';
+  
+  // 获取表头和表体
+  const tableHeader = resultsContainer.querySelector('div[style*="grid-template-columns"]');
+  const tableBody = resultsContainer.querySelector('div[style*="overflow-y: auto"]');
+  
+  if (!tableHeader || !tableBody) {
+    alert('无法识别表格结构，请联系技术支持');
+    console.error('表格结构未找到 - 表头或表体缺失');
+    return;
+  }
+  
+  // 创建HTML表格
+  let tableHTML = '<table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">';
+  
+  // 添加表头
+  tableHTML += '<thead><tr style="background-color:#f8fafc;">';
+  const headerCells = Array.from(tableHeader.children);
+  // 跳过第一个复选框列
+  for (let i = 1; i < headerCells.length; i++) {
+    const align = headerCells[i].style.textAlign || 'left';
+    tableHTML += `<th style="text-align:${align};font-weight:bold;">${headerCells[i].textContent.trim()}</th>`;
+  }
+  tableHTML += '</tr></thead><tbody>';
+  
+  // 添加表体行
+  const rows = Array.from(tableBody.querySelectorAll('div[style*="display: grid"]'));
+  rows.forEach((row, rowIndex) => {
+    const isEvenRow = rowIndex % 2 === 1;
+    tableHTML += `<tr style="background-color:${isEvenRow ? '#f9fafb' : 'white'}">`;
+    
+    const cells = Array.from(row.children);
+    // 跳过第一个复选框列
+    for (let j = 1; j < cells.length; j++) {
+      const cell = cells[j];
+      const align = cell.style.textAlign || 'left';
+      
+      // 处理嵌套内容
+      if (cell.children.length > 0 && !cell.querySelector('input')) {
+        // 有嵌套div结构的单元格
+        let cellContent = '';
+        Array.from(cell.querySelectorAll('div')).forEach(div => {
+          if (div.textContent.trim()) {
+            cellContent += div.textContent.trim() + '<br>';
+          }
+        });
+        // 移除最后一个<br>
+        if (cellContent.endsWith('<br>')) {
+          cellContent = cellContent.slice(0, -4);
+        }
+        tableHTML += `<td style="text-align:${align}">${cellContent || cell.textContent.trim()}</td>`;
+      } else {
+        // 普通文本单元格
+        tableHTML += `<td style="text-align:${align}">${cell.textContent.trim()}</td>`;
+      }
+    }
+    
+    tableHTML += '</tr>';
+  });
+  
+  tableHTML += '</tbody></table>';
+  
+  // 创建完整HTML文档
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>秒寻搜索结果</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #334155; }
+        h1 { color: #2563eb; font-size: 24px; margin-bottom: 20px; }
+        .header { margin-bottom: 30px; text-align: center; }
+        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #64748b; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #f8fafc; padding: 10px; text-align: left; font-weight: bold; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+        tr:nth-child(even) { background-color: #f9fafb; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>秒寻 - 搜索结果</h1>
+        <p>${resultCount}</p>
+        <p>生成时间: ${new Date().toLocaleString()}</p>
+      </div>
+      
+      ${tableHTML}
+      
+      <div class="footer">
+        <p>由秒寻 - AI驱动的工业元器件选型助手生成</p>
+        <p>导出日期: ${new Date().toLocaleDateString()}</p>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  // 创建下载
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `秒寻搜索结果_${new Date().toISOString().split('T')[0]}.html`;
+  
+  // 触发下载
+  document.body.appendChild(a);
+  a.click();
+  
+  // 清理
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  
+  console.log('搜索结果下载完成');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 添加客户详情内容切换功能
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 增加"问题跟进"按钮功能
+// 增加“问题跟进”按钮功能 (添加此部分 JS)
+
+// 修改后的切换函数
+function showFollowUpPage() {
+  // 给整个销售内容区域添加一个模式标识类
+  const batchQueryContent = document.getElementById('batch-query-content');
+  if (batchQueryContent) {
+    batchQueryContent.classList.add('follow-up-mode');
+  }
+  
+  // 隐藏工作台主内容
+  const salesWorkstationMain = document.getElementById('sales-workstation-main');
+  if (salesWorkstationMain) {
+    salesWorkstationMain.style.display = 'none';
+  }
+  
+  // 隐藏工作台头部信息
+  const workstationHeader = document.querySelector('#batch-query-content > div > div:first-child');
+  if (workstationHeader) {
+    workstationHeader.style.display = 'none';
+  }
+  
+  // 显示问题跟进页面
+  const followUpContent = document.getElementById('follow-up-content');
+  if (followUpContent) {
+    followUpContent.style.display = 'block';
+  }
+}
+
+function showSalesWorkstation() {
+  // 移除模式标识类
+  const batchQueryContent = document.getElementById('batch-query-content');
+  if (batchQueryContent) {
+    batchQueryContent.classList.remove('follow-up-mode');
+  }
+  
+  // 显示工作台主内容
+  const salesWorkstationMain = document.getElementById('sales-workstation-main');
+  if (salesWorkstationMain) {
+    salesWorkstationMain.style.display = 'flex';
+  }
+  
+  // 显示工作台头部信息
+  const workstationHeader = document.querySelector('#batch-query-content > div > div:first-child');
+  if (workstationHeader) {
+    workstationHeader.style.display = 'flex';
+  }
+  
+  // 隐藏问题跟进页面
+  const followUpContent = document.getElementById('follow-up-content');
+  if (followUpContent) {
+    followUpContent.style.display = 'none';
+  }
+}
+
+// 确保页面加载完成后设置正确的初始状态
+document.addEventListener('DOMContentLoaded', function() {
+  // 移除多余的问题跟进面板，只保留一个
+  const followUpPanels = document.querySelectorAll('.feature-content-panel#follow-up-content');
+  if (followUpPanels.length > 1) {
+    // 移除多余的面板，保留第一个
+    for (let i = 1; i < followUpPanels.length; i++) {
+      followUpPanels[i].parentNode.removeChild(followUpPanels[i]);
+    }
+  }
+  
+  // 将问题跟进面板移动到正确的位置
+  const followUpContent = document.getElementById('follow-up-content');
+  const batchQueryContent = document.getElementById('batch-query-content');
+  if (followUpContent && batchQueryContent) {
+    batchQueryContent.appendChild(followUpContent);
+  }
+  
+  // 初始状态下隐藏问题跟进页面
+  if (followUpContent) {
+    followUpContent.style.display = 'none';
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 客户档案页面 -->
+
+<!-- 交互功能脚本 -->
+
+  function closeCustomerProfileModal() {
+    document.getElementById('customerProfileModal').style.display = 'none';
+  }
+  
+  function switchProfileTab(tabId) {
+    // 隐藏所有面板
+    const panels = document.getElementsByClassName('profile-panel');
+    for (let i = 0; i < panels.length; i++) {
+      panels[i].style.display = 'none';
+    }
+    
+    // 显示选中的面板
+    document.getElementById(tabId + '-panel').style.display = 'block';
+    
+    // 更新标签样式
+    const tabs = document.getElementsByClassName('profile-tab');
+    for (let i = 0; i < tabs.length; i++) {
+      tabs[i].style.color = '#64748b';
+      tabs[i].style.borderBottom = 'none';
+    }
+    
+    // 设置选中标签样式
+    const activeTab = document.querySelector(`.profile-tab[data-tab="${tabId}"]`);
+    activeTab.style.color = '#2563eb';
+    activeTab.style.borderBottom = '2px solid #2563eb';
+  }
+  
+  // 显示客户档案模态框的函数
+  function showCustomerProfile() {
+    document.getElementById('customerProfileModal').style.display = 'block';
+  }
+  
+  // 展开/收起详情的函数
+  function toggleDetails(elementId) {
+    const element = document.getElementById(elementId);
+    if (element.style.display === 'none' || !element.style.display) {
+      element.style.display = 'block';
+    } else {
+      element.style.display = 'none';
+    }
+  }
+  
+  // 添加联系人的函数
+  function showAddContactForm() {
+    // 实现添加联系人表单的显示逻辑
+    alert('打开添加联系人表单');
+  }
+  
+  // 编辑档案的函数
+  function editCustomerProfile() {
+    // 实现编辑档案的逻辑
+    alert('进入档案编辑模式');
+  }
+  
+  // 图表初始化函数（如果使用图表库）
+  function initCharts() {
+    // 这里可以添加图表初始化代码，例如使用ECharts、Chart.js等
+    console.log('初始化图表');
+  }
+  
+  // 页面加载完成后初始化
+  window.onload = function() {
+    // 默认显示第一个标签页
+    switchProfileTab('basic-info');
+    
+    // 初始化图表（如果有）
+    initCharts();
+    
+    // 添加其他需要在页面加载时执行的初始化代码
+  };
+
+
+
+
+
+
+
+
+
+
+// 添加客户档案按钮点击事件处理
+document.addEventListener('DOMContentLoaded', function() {
+  // 查找客户档案按钮
+  const profileButton = document.querySelector('.sales-workstation .btn, button:contains("客户档案")');
+  
+  // 如果找不到按钮，尝试更精确的选择器
+  const allButtons = document.querySelectorAll('button');
+  let customerProfileButton = null;
+  
+  // 遍历所有按钮查找包含"客户档案"文本的按钮
+  allButtons.forEach(button => {
+    if (button.textContent.includes('客户档案')) {
+      customerProfileButton = button;
+    }
+  });
+  
+  // 如果找到按钮，添加点击事件监听器
+  if (customerProfileButton) {
+    customerProfileButton.addEventListener('click', showCustomerProfile);
+  } else {
+    console.error('未找到客户档案按钮');
+  }
+});
+
+// 确保showCustomerProfile函数已定义
+function showCustomerProfile() {
+  const profileModal = document.getElementById('customerProfileModal');
+  if (profileModal) {
+    profileModal.style.display = 'block';
+  } else {
+    console.error('未找到客户档案模态框元素');
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 全选/全不选功能
+document.addEventListener('DOMContentLoaded', function() {
+  // 选中表头全选checkbox
+  var selectAll = document.querySelector('.select-all-checkbox');
+  // 所有数据行的checkbox
+  function getRowCheckboxes() {
+    return document.querySelectorAll('.row-checkbox');
+  }
+
+  if(selectAll){
+    // 全选/反选
+    selectAll.addEventListener('change', function() {
+      var rowCheckboxes = getRowCheckboxes();
+      rowCheckboxes.forEach(function(cb) {
+        cb.checked = selectAll.checked;
+        // 如果有额外的点击高亮处理，可以这里调用change事件
+        cb.dispatchEvent(new Event('change'));
+      });
+    });
+
+    // 监听每个行checkbox，部分选中时，表头变成非全部选中状态
+    document.addEventListener('change', function(e){
+      if(e.target.classList.contains('row-checkbox')){
+        var all = getRowCheckboxes();
+        var checkedCount = Array.from(all).filter(cb => cb.checked).length;
+        if (checkedCount === all.length) {
+          selectAll.checked = true;
+          selectAll.indeterminate = false;
+        } else if (checkedCount === 0) {
+          selectAll.checked = false;
+          selectAll.indeterminate = false;
+        } else {
+          selectAll.checked = false;
+          selectAll.indeterminate = true;
+        }
+      }
+    });
+  }
+});
 
 
 
